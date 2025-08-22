@@ -155,7 +155,12 @@ export default function CreatePermohonanKredit({
               } ${record ? "to" : ""} ${e})`;
               setActivity((prev) => {
                 prev = prev
-                  ? prev.filter((p) => !p.includes("Edit Nama Pemohon"))
+                  ? prev.filter(
+                      (p) =>
+                        !p.includes(
+                          `${record ? "Edit" : "Tambah"} Nama Pemohon`
+                        )
+                    )
                   : [];
                 prev.push(txt);
                 return prev;
@@ -175,7 +180,11 @@ export default function CreatePermohonanKredit({
                 record ? record.NIK : ""
               } ${record ? "to" : ""} ${e})`;
               setActivity((prev) => {
-                prev = prev ? prev.filter((p) => !p.includes("Edit NIK")) : [];
+                prev = prev
+                  ? prev.filter(
+                      (p) => !p.includes(`${record ? "Edit" : "Tambah"} NIK`)
+                    )
+                  : [];
                 prev.push(txt);
                 return prev;
               });
@@ -197,7 +206,10 @@ export default function CreatePermohonanKredit({
               } ${record ? "to" : ""} ${e})`;
               setActivity((prev) => {
                 prev = prev
-                  ? prev.filter((p) => !p.includes("Edit No Rekening"))
+                  ? prev.filter(
+                      (p) =>
+                        !p.includes(`${record ? "Edit" : "Tambah"} No Rekening`)
+                    )
                   : [];
                 prev.push(txt);
                 return prev;
@@ -226,7 +238,12 @@ export default function CreatePermohonanKredit({
                 } ${record ? "to" : ""} ${e})`;
                 setActivity((prev) => {
                   prev = prev
-                    ? prev.filter((p) => !p.includes("Edit Jenis Pemohon"))
+                    ? prev.filter(
+                        (p) =>
+                          !p.includes(
+                            `${record ? "Edit" : "Tambah"} Jenis Pemohon`
+                          )
+                      )
                     : [];
                   prev.push(txt);
                   return prev;
@@ -261,7 +278,10 @@ export default function CreatePermohonanKredit({
                 } ${record ? "to" : ""} ${e})`;
                 setActivity((prev) => {
                   prev = prev
-                    ? prev.filter((p) => !p.includes("Edit Marketing"))
+                    ? prev.filter(
+                        (p) =>
+                          !p.includes(`${record ? "Edit" : "Tambah"} Marketing`)
+                      )
                     : [];
                   prev.push(txt);
                   return prev;
@@ -291,7 +311,12 @@ export default function CreatePermohonanKredit({
                 } ${record ? "to" : ""} ${e})`;
                 setActivity((prev) => {
                   prev = prev
-                    ? prev.filter((p) => !p.includes("Edit Tujuan Penggunaan"))
+                    ? prev.filter(
+                        (p) =>
+                          !p.includes(
+                            `${record ? "Edit" : "Tambah"} Tujuan Penggunaan`
+                          )
+                      )
                     : [];
                   prev.push(txt);
                   return prev;
@@ -322,7 +347,12 @@ export default function CreatePermohonanKredit({
                     setActivity((prev) => {
                       prev = prev
                         ? prev.filter(
-                            (p) => !p.includes(`Edit Keterangan [index(${i})]`)
+                            (p) =>
+                              !p.includes(
+                                `${
+                                  record ? "Edit" : "Tambah"
+                                } Keterangan [index(${i})]`
+                              )
                           )
                         : [];
                       prev.push(txt);

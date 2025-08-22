@@ -1,8 +1,13 @@
 import cloudinary from "@/components/Cloudinary";
-import { IPermohonanAction, IRootFiles } from "@/components/IInterfaces";
+import {
+  EditActivity,
+  IPermohonanAction,
+  IRootFiles,
+} from "@/components/IInterfaces";
 import prisma from "@/components/Prisma";
 import { logActivity } from "@/components/utils/Auth";
 import { ENeedAction, Files, StatusAction } from "@prisma/client";
+import moment from "moment";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
@@ -14,6 +19,26 @@ export const POST = async (req: NextRequest) => {
         Files: { connect: data.Files.map((d: Files) => ({ id: d.id })) },
       },
     });
+
+    const find = await prisma.permohonanKredit.findFirst({
+      where: { id: data.permohonanKreditId },
+    });
+    if (find) {
+      const temp = find.activity
+        ? (JSON.parse(find.activity) as EditActivity[])
+        : [];
+      temp.push({
+        time: moment().format("DD/MM/YYYY HH:mm"),
+        desc: `User id [${data.requesterId}] Memohon ${
+          data.action
+        } Files: ${data.Files.map((d: Files) => d.name).join(",")}`,
+      });
+      await prisma.permohonanKredit.update({
+        where: { id: find.id },
+        data: { activity: JSON.stringify(temp) },
+      });
+    }
+
     await logActivity(
       req,
       `Permohonan ${data.action} File`,
@@ -148,6 +173,29 @@ export const PUT = async (req: NextRequest) => {
       RootFiles,
       ...savedData
     } = data;
+
+    // ADD ACTIVITY
+    const find = await prisma.permohonanKredit.findFirst({
+      where: { id: data.permohonanKreditId },
+    });
+    if (find) {
+      const temp = find.activity
+        ? (JSON.parse(find.activity) as EditActivity[])
+        : [];
+      temp.push({
+        time: moment().format("DD/MM/YYYY HH:mm"),
+        desc: `[${data.approverId}] Melakukan proses (${data.statusAction}) ${
+          data.action
+        } Files : ${RootFiles.flatMap((r) => r.Files)
+          .map((d: Files) => d.name)
+          .join(",")}`,
+      });
+      await prisma.permohonanKredit.update({
+        where: { id: find.id },
+        data: { activity: JSON.stringify(temp) },
+      });
+    }
+
     const Files = RootFiles.flatMap((r) => r.Files);
     if (data.statusAction === StatusAction.APPROVED) {
       await prisma.permohonanAction.update({

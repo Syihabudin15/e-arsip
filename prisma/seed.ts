@@ -97,15 +97,13 @@ async function main() {
   });
 
   const rootFilesSeed = [
-    { name: "File Identitas" },
-    { name: "File Kepatuhan" },
-    { name: "File MAUK" },
-    { name: "File Aspek Keuangan" },
-    { name: "File SLIK" },
-    { name: "File Jaminan" },
-    { name: "File Kredit" },
-    { name: "File Legal" },
-    { name: "File Custody" },
+    { name: "File Identitas", order: 1 },
+    { name: "File Kredit", order: 2 },
+    { name: "File Jaminan", order: 3 },
+    { name: "File SLIK", order: 4 },
+    { name: "File Legal", order: 5 },
+    { name: "File Kepatuhan", order: 6 },
+    { name: "File Custody", order: 7 },
   ];
 
   await Promise.all(

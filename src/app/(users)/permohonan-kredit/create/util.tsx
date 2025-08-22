@@ -72,7 +72,7 @@ export default function CreatePermohonanKredit({
     if ("key" in data) {
       delete data.key;
     }
-    if (record && activity) {
+    if (activity.length !== 0) {
       const temp = data.activity
         ? (JSON.parse(data.activity) as EditActivity[])
         : [];
@@ -150,16 +150,16 @@ export default function CreatePermohonanKredit({
             value={data.fullname}
             onChange={(e: string) => {
               setData({ ...data, fullname: e });
-              if (record) {
-                const txt = `Edit Nama Pemohon (${record.fullname} to ${e})`;
-                setActivity((prev) => {
-                  prev = prev
-                    ? prev.filter((p) => !p.includes("Edit Nama Pemohon"))
-                    : [];
-                  prev.push(txt);
-                  return prev;
-                });
-              }
+              const txt = `${record ? "Edit" : "Tambah"} Nama Pemohon (${
+                record ? record.fullname : ""
+              } ${record ? "to" : ""} ${e})`;
+              setActivity((prev) => {
+                prev = prev
+                  ? prev.filter((p) => !p.includes("Edit Nama Pemohon"))
+                  : [];
+                prev.push(txt);
+                return prev;
+              });
             }}
             align="col"
             width={"48%"}
@@ -171,16 +171,14 @@ export default function CreatePermohonanKredit({
             type="number"
             onChange={(e: string) => {
               setData({ ...data, NIK: String(e) });
-              if (record) {
-                const txt = `Edit NIK (${record.NIK} to ${e})`;
-                setActivity((prev) => {
-                  prev = prev
-                    ? prev.filter((p) => !p.includes("Edit NIK"))
-                    : [];
-                  prev.push(txt);
-                  return prev;
-                });
-              }
+              const txt = `${record ? "Edit" : "Tambah"} NIK (${
+                record ? record.NIK : ""
+              } ${record ? "to" : ""} ${e})`;
+              setActivity((prev) => {
+                prev = prev ? prev.filter((p) => !p.includes("Edit NIK")) : [];
+                prev.push(txt);
+                return prev;
+              });
             }}
             align="col"
             width={"48%"}
@@ -194,16 +192,16 @@ export default function CreatePermohonanKredit({
                 ...data,
                 accountNumber: String(e),
               });
-              if (record) {
-                const txt = `Edit No Rekening (${record.accountNumber} to ${e})`;
-                setActivity((prev) => {
-                  prev = prev
-                    ? prev.filter((p) => !p.includes("Edit No Rekening"))
-                    : [];
-                  prev.push(txt);
-                  return prev;
-                });
-              }
+              const txt = `${record ? "Edit" : "Tambah"} No Rekening (${
+                record ? record.accountNumber : ""
+              } ${record ? "to" : ""} ${e})`;
+              setActivity((prev) => {
+                prev = prev
+                  ? prev.filter((p) => !p.includes("Edit No Rekening"))
+                  : [];
+                prev.push(txt);
+                return prev;
+              });
             }}
             align="col"
             width={"48%"}
@@ -223,16 +221,16 @@ export default function CreatePermohonanKredit({
                   jenisPemohonId: e,
                   JenisPemohon: jeniss.filter((j) => j.id === e)[0],
                 });
-                if (record) {
-                  const txt = `Edit Jenis Pemohon (${record.jenisPemohonId} to ${e})`;
-                  setActivity((prev) => {
-                    prev = prev
-                      ? prev.filter((p) => !p.includes("Edit Jenis Pemohon"))
-                      : [];
-                    prev.push(txt);
-                    return prev;
-                  });
-                }
+                const txt = `${record ? "Edit" : "Tambah"} Jenis Pemohon (${
+                  record ? record.jenisPemohonId : ""
+                } ${record ? "to" : ""} ${e})`;
+                setActivity((prev) => {
+                  prev = prev
+                    ? prev.filter((p) => !p.includes("Edit Jenis Pemohon"))
+                    : [];
+                  prev.push(txt);
+                  return prev;
+                });
               }}
             />
           </div>
@@ -258,16 +256,16 @@ export default function CreatePermohonanKredit({
                   userId: e,
                   User: find[0],
                 });
-                if (record) {
-                  const txt = `Edit Marketing (${record.userId} to ${e})`;
-                  setActivity((prev) => {
-                    prev = prev
-                      ? prev.filter((p) => !p.includes("Edit Marketing"))
-                      : [];
-                    prev.push(txt);
-                    return prev;
-                  });
-                }
+                const txt = `${record ? "Edit" : "Tambah"} Marketing (${
+                  record ? record.userId : ""
+                } ${record ? "to" : ""} ${e})`;
+                setActivity((prev) => {
+                  prev = prev
+                    ? prev.filter((p) => !p.includes("Edit Marketing"))
+                    : [];
+                  prev.push(txt);
+                  return prev;
+                });
               }}
             />
           </div>
@@ -288,18 +286,16 @@ export default function CreatePermohonanKredit({
                   ...data,
                   purposeUse: e,
                 });
-                if (record) {
-                  const txt = `Edit Tujuan Penggunaan (${record.purposeUse} to ${e})`;
-                  setActivity((prev) => {
-                    prev = prev
-                      ? prev.filter(
-                          (p) => !p.includes("Edit Tujuan Penggunaan")
-                        )
-                      : [];
-                    prev.push(txt);
-                    return prev;
-                  });
-                }
+                const txt = `${record ? "Edit" : "Tambah"} Tujuan Penggunaan (${
+                  record ? record.purposeUse : ""
+                } ${record ? "to" : ""} ${e})`;
+                setActivity((prev) => {
+                  prev = prev
+                    ? prev.filter((p) => !p.includes("Edit Tujuan Penggunaan"))
+                    : [];
+                  prev.push(txt);
+                  return prev;
+                });
               }}
             />
           </div>
@@ -322,19 +318,16 @@ export default function CreatePermohonanKredit({
                       ...data,
                       description: JSON.stringify(prevDesc), // simpan kembali ke string
                     });
-                    if (record) {
-                      const txt = `Edit Keterangan [index(${i})]`;
-                      setActivity((prev) => {
-                        prev = prev
-                          ? prev.filter(
-                              (p) =>
-                                !p.includes(`Edit Keterangan [index(${i})]`)
-                            )
-                          : [];
-                        prev.push(txt);
-                        return prev;
-                      });
-                    }
+                    const txt = `Edit Keterangan [index(${i})]`;
+                    setActivity((prev) => {
+                      prev = prev
+                        ? prev.filter(
+                            (p) => !p.includes(`Edit Keterangan [index(${i})]`)
+                          )
+                        : [];
+                      prev.push(txt);
+                      return prev;
+                    });
                   }}
                   align="col"
                   width={"48%"}
@@ -348,16 +341,14 @@ export default function CreatePermohonanKredit({
             value={tempDesc}
             onChange={(e: string) => {
               setTempDesc(e);
-              if (record) {
-                const txt = `Tambah Keterangan (${e})`;
-                setActivity((prev) => {
-                  prev = prev
-                    ? prev.filter((p) => !p.includes("Tambah Keterangan"))
-                    : [];
-                  prev.push(txt);
-                  return prev;
-                });
-              }
+              const txt = `Tambah Keterangan (${e})`;
+              setActivity((prev) => {
+                prev = prev
+                  ? prev.filter((p) => !p.includes("Tambah Keterangan"))
+                  : [];
+                prev.push(txt);
+                return prev;
+              });
             }}
             align="col"
             width={"48%"}
@@ -383,7 +374,7 @@ export default function CreatePermohonanKredit({
                     return prev;
                   })
                 }
-                setActivity={record && setActivity}
+                setActivity={setActivity}
               />
             ))}
           </div>

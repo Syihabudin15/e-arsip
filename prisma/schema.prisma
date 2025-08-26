@@ -73,6 +73,7 @@ model PermohonanKredit {
   NIK           String?
   purposeUse    String?
   accountNumber String?
+  noCIF         String?
   description   String? @db.Text
   activity      String? @db.Text
 

@@ -193,6 +193,32 @@ export default function CreatePermohonanKredit({
             width={"48%"}
           />
           <FormInput
+            label="Nomor CIF"
+            value={data.noCIF}
+            type="number"
+            onChange={(e: string) => {
+              setData({
+                ...data,
+                noCIF: String(e),
+              });
+              const txt = `${record ? "Edit" : "Tambah"} No CIF (${
+                record ? record.noCIF : ""
+              } ${record ? "to" : ""} ${e})`;
+              setActivity((prev) => {
+                prev = prev
+                  ? prev.filter(
+                      (p) => !p.includes(`${record ? "Edit" : "Tambah"} No CIF`)
+                    )
+                  : [];
+                prev.push(txt);
+                return prev;
+              });
+            }}
+            align="col"
+            width={"48%"}
+            // hide={user && user.role.roleName === "MARKETING" ? true : false}
+          />
+          <FormInput
             label="Nomor Rekening"
             value={data.accountNumber}
             type="number"
@@ -446,6 +472,7 @@ const defaultPermohonan: IPermohonanKredit = {
   updatedAt: new Date(),
   jenisPemohonId: 0,
   accountNumber: "",
+  noCIF: "",
   description: "",
   activity: "",
   userId: 0,

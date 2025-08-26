@@ -381,7 +381,17 @@ const ProsesDeleteFile = ({
         } else {
           modal.success({
             title: "BERHASIL",
-            content: "File berhasil dihapus",
+            content: `${
+              data.statusAction === "PENDING"
+                ? `Penghapusan file dipending ${
+                    desc ? "karena alasan " + desc : ""
+                  }`
+                : data.statusAction === "APPROVED"
+                ? "File berhasil dihapus"
+                : `Penghapusan file tidak disetujui ${
+                    desc ? "karena alasan " + desc : ""
+                  }`
+            }`,
           });
           setOpen(false);
           getData();

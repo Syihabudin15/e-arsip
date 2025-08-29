@@ -61,7 +61,7 @@ export default function LoginPage() {
         /> */}
         {/* <img src={"/login-bg.jpeg"} className="rounded-2xl" /> */}
       </div>
-      <div className="bg-slate-50 p-5 h-[50vh] sm:h-full w-[90vw] sm:w-[38vw] flex flex-col items-center justify-center rounded">
+      <div className="bg-slate-50 p-5 h-[60vh] sm:h-full w-[90vw] sm:w-[38vw] flex flex-col items-center justify-center rounded">
         <Image
           src={"/rifi-login.jpeg"}
           alt="App Logo"
@@ -97,6 +97,12 @@ export default function LoginPage() {
               </Button>
             </div>
           </Form>
+          <div className="mt-4 italic text-center">
+            <p>Version 1.1</p>
+            <p>
+              Registered Free to <span className="font-bold">Bank Rifi</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

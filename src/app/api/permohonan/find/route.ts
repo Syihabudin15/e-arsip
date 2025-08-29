@@ -13,8 +13,9 @@ export const GET = async (req: NextRequest) => {
     const data = await prisma.permohonanKredit.findFirst({
       where: { id: parseInt(id) },
       include: {
-        JenisPemohon: true,
+        Pemohon: true,
         User: true,
+        Produk: true,
       },
     });
     if (!data) {

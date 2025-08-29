@@ -1,6 +1,7 @@
 import cloudinary from "@/components/Cloudinary";
 import {
   EditActivity,
+  IDescription,
   IPermohonanAction,
   IRootFiles,
 } from "@/components/IInterfaces";
@@ -82,11 +83,13 @@ export const GET = async (req: NextRequest) => {
       where: {
         ...(search && {
           PermohonanKredit: {
-            OR: [
-              { fullname: { contains: search } },
-              { NIK: { contains: search } },
-              { accountNumber: { contains: search } },
-            ],
+            Pemohon: {
+              OR: [
+                { fullname: { contains: search } },
+                { NIK: { contains: search } },
+                { noCIF: { contains: search } },
+              ],
+            },
           },
         }),
         ...(status && { statusAction: status }),
@@ -102,7 +105,7 @@ export const GET = async (req: NextRequest) => {
         },
         Requester: true,
         Approver: true,
-        PermohonanKredit: true,
+        PermohonanKredit: { include: { Pemohon: true } },
       },
       take: pageSize,
       skip: skip,
@@ -112,11 +115,13 @@ export const GET = async (req: NextRequest) => {
       where: {
         ...(search && {
           PermohonanKredit: {
-            OR: [
-              { fullname: { contains: search } },
-              { NIK: { contains: search } },
-              { accountNumber: { contains: search } },
-            ],
+            Pemohon: {
+              OR: [
+                { fullname: { contains: search } },
+                { NIK: { contains: search } },
+                { noCIF: { contains: search } },
+              ],
+            },
           },
         }),
         ...(status && { statusAction: status }),
@@ -257,6 +262,88 @@ export const PUT = async (req: NextRequest) => {
     console.log(err);
     return NextResponse.json(
       { msg: "Server Error", status: 500 },
+      { status: 500 }
+    );
+  }
+};
+
+export const PATCH = async (req: NextRequest) => {
+  const data = await req.json();
+
+  try {
+    const findPermohonan = await prisma.permohonanAction.findFirst({
+      where: { id: data.actionId },
+      include: {
+        Files: true,
+      },
+    });
+    if (!findPermohonan)
+      return NextResponse.json(
+        { status: 404, msg: "NOT FOUND" },
+        { status: 404 }
+      );
+    const isLast = findPermohonan.Files.flatMap((f) => f.allowDownload)
+      .join("")
+      .split(",")
+      .map(Number)
+      .filter((a) => a === findPermohonan.requesterId);
+
+    const desc = JSON.parse(
+      findPermohonan.description || "[]"
+    ) as IDescription[];
+    desc.push(data.activities);
+    const permohonanKreedit = await prisma.permohonanKredit.findFirst({
+      where: { id: findPermohonan.permohonanKreditId },
+    });
+
+    const lastAct = JSON.parse(
+      permohonanKreedit?.activity || "[]"
+    ) as EditActivity[];
+    lastAct.push({
+      time: data.activities.time,
+      desc: data.activities.desc,
+    });
+
+    await prisma.$transaction([
+      prisma.files.update({
+        where: { id: data.File.id },
+        data: {
+          allowDownload: data.File.allowDownload
+            .split(",")
+            .map(Number)
+            .filter((a: number) => a !== findPermohonan.requesterId)
+            .join(","),
+        },
+      }),
+      prisma.permohonanAction.update({
+        where: { id: findPermohonan.id },
+        data: {
+          description: JSON.stringify(desc),
+          updatedAt: new Date(),
+          status: isLast.length === 1 ? false : true,
+        },
+      }),
+      prisma.permohonanKredit.update({
+        where: { id: findPermohonan.permohonanKreditId },
+        data: {
+          activity: JSON.stringify(lastAct),
+        },
+      }),
+    ]);
+    await logActivity(
+      req,
+      "Download File",
+      "PATCH",
+      "files",
+      JSON.stringify(data),
+      JSON.stringify({ status: 200, msg: "OK" }),
+      `Berhasil mendownload files ${data.name}`
+    );
+    return NextResponse.json({ status: 200, msg: "OK" }, { status: 200 });
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json(
+      { status: 500, msg: "Server Error" },
       { status: 500 }
     );
   }

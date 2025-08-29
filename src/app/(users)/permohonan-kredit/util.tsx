@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  EditActivity,
   IDescription,
   IPermohonanKredit,
   IRootFiles,
@@ -10,11 +11,21 @@ import { FilterOption, FormInput } from "@/components/utils/FormUtils";
 import {
   DeleteOutlined,
   FolderOutlined,
+  FormOutlined,
   LoadingOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
-import { JenisPemohon } from "@prisma/client";
-import { Button, Input, Modal, Table, TableProps, Tabs } from "antd";
+import { JenisPemohon, Produk } from "@prisma/client";
+import {
+  App,
+  Button,
+  Input,
+  Modal,
+  Table,
+  TableProps,
+  Tabs,
+  Typography,
+} from "antd";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { PDFDocument } from "pdf-lib";
@@ -22,6 +33,7 @@ import { useAccess } from "@/components/utils/PermissionUtil";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useUser } from "@/components/contexts/UserContext";
+import { ExportData } from "../logs/util";
 const MyPDFViewer = dynamic(
   () => import("@/components/utils/LayoutUtil").then((d) => d.MyPDFViewer),
   {
@@ -29,6 +41,7 @@ const MyPDFViewer = dynamic(
     loading: () => <LoadingOutlined />,
   }
 );
+const { Paragraph } = Typography;
 
 export default function TablePermohonanKredit() {
   const [page, setPage] = useState(1);
@@ -38,8 +51,8 @@ export default function TablePermohonanKredit() {
   const [data, setData] = useState<IPermohonanKredit[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [jeniss, setJeniss] = useState<JenisPemohon[]>([]);
-  const { access, hasAccess } = useAccess("/permohonan-kredit");
+  const [jeniss, setJeniss] = useState<Produk[]>([]);
+  const { hasAccess } = useAccess("/permohonan-kredit");
   const user = useUser();
 
   const getData = async () => {
@@ -61,7 +74,7 @@ export default function TablePermohonanKredit() {
   useEffect(() => {
     (async () => {
       await getData();
-      await fetch("/api/jenis-pemohon")
+      await fetch("/api/produk")
         .then((res) => res.json())
         .then((res) => {
           if (res.status === 200)
@@ -95,6 +108,7 @@ export default function TablePermohonanKredit() {
       render(value, record, index) {
         return <>{(page - 1) * pageSize + (index + 1)}</>;
       },
+      fixed: window && window.innerWidth > 600 ? "left" : false,
     },
     {
       title: "ID",
@@ -115,8 +129,24 @@ export default function TablePermohonanKredit() {
       },
     },
     {
+      title: "NO CIF",
+      dataIndex: ["Pemohon", "noCIF"],
+      key: "noCIF",
+      className: "text-xs",
+      width: 150,
+      onHeaderCell: () => {
+        return {
+          ["style"]: {
+            textAlign: "center",
+            fontSize: 12,
+          },
+        };
+      },
+      fixed: window && window.innerWidth > 600 ? "left" : false,
+    },
+    {
       title: "NAMA PEMOHON",
-      dataIndex: "fullname",
+      dataIndex: ["Pemohon", "fullname"],
       key: "fullname",
       className: "text-xs",
       width: 200,
@@ -128,16 +158,14 @@ export default function TablePermohonanKredit() {
           },
         };
       },
-      render(value, record, index) {
-        return <>{record.fullname}</>;
-      },
+      fixed: window && window.innerWidth > 600 ? "left" : false,
     },
     {
       title: "NOMOR NIK",
-      dataIndex: "nik",
+      dataIndex: ["Pemohon", "NIK"],
       key: "nik",
       className: "text-xs",
-      width: 200,
+      width: 150,
       onHeaderCell: () => {
         return {
           ["style"]: {
@@ -145,17 +173,14 @@ export default function TablePermohonanKredit() {
             fontSize: 12,
           },
         };
-      },
-      render(value, record, index) {
-        return <>{record.NIK && record.NIK}</>;
       },
     },
     {
-      title: "JENIS PEMOHON",
-      dataIndex: "jenisPemohon",
-      key: "jenisPemohon",
+      title: "PRODUK",
+      dataIndex: ["Produk", "name"],
+      key: "produk",
       className: "text-xs",
-      width: 200,
+      width: 150,
       onHeaderCell: () => {
         return {
           ["style"]: {
@@ -163,9 +188,6 @@ export default function TablePermohonanKredit() {
             fontSize: 12,
           },
         };
-      },
-      render(value, record, index) {
-        return <>{record.JenisPemohon.name}</>;
       },
     },
     {
@@ -181,6 +203,91 @@ export default function TablePermohonanKredit() {
             fontSize: 12,
           },
         };
+      },
+    },
+    {
+      title: "FILES",
+      dataIndex: "files",
+      key: "files",
+      className: "text-xs",
+      width: 300,
+      onHeaderCell: () => {
+        return {
+          ["style"]: {
+            textAlign: "center",
+            fontSize: 12,
+          },
+        };
+      },
+      render(value, record, index) {
+        return (
+          <>
+            <Paragraph
+              ellipsis={{
+                rows: 2,
+                expandable: "collapsible",
+              }}
+              style={{ fontSize: 11 }}
+            >
+              {record.RootFiles.map((rf) => (
+                <>
+                  {"{"}
+                  {rf.name} ({rf.Files.map((f) => f.name).join(",")}){"};"}{" "}
+                  <br />
+                  <br />
+                </>
+              ))}
+              {record.RootFiles.flatMap((rf) => rf.Files).map((p) => (
+                <>
+                  {"{"}
+                  {p.name}
+                  {"};"} <br />
+                  <br />
+                </>
+              ))}
+            </Paragraph>
+          </>
+        );
+      },
+    },
+    {
+      title: "LAST ACTIVITY",
+      dataIndex: "activity",
+      key: "activity",
+      className: "text-xs",
+      width: 300,
+      onHeaderCell: () => {
+        return {
+          ["style"]: {
+            textAlign: "center",
+            fontSize: 12,
+          },
+        };
+      },
+      render(value, record, index) {
+        const parse = record.activity
+          ? (JSON.parse(record.activity) as EditActivity[])
+          : [];
+        return (
+          <>
+            <Paragraph
+              ellipsis={{
+                rows: 2,
+                expandable: "collapsible",
+              }}
+              style={{ fontSize: 11 }}
+            >
+              {parse.map((p) => (
+                <>
+                  {"{"}
+                  {p.time} | {p.desc}
+                  {"};"} <br />
+                  <br />
+                </>
+              ))}
+            </Paragraph>
+          </>
+        );
       },
     },
     {
@@ -237,16 +344,22 @@ export default function TablePermohonanKredit() {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
             {hasAccess("detail") && <DetailPermohonan data={record} />}
-            {user && (
-              <>
-                {hasAccess("delete") && (
-                  <DeletePermohonan
-                    data={record}
-                    getData={getData}
-                    user={user}
-                  />
-                )}
-              </>
+            {hasAccess("update") && (
+              <Link href={"/permohonan-kredit/" + record.id}>
+                <Button
+                  icon={<FormOutlined />}
+                  size="small"
+                  type="primary"
+                ></Button>
+              </Link>
+            )}
+            {hasAccess("delete") && (
+              <Link href={"/permohonan-kredit/delete/" + record.id}>
+                <Button icon={<DeleteOutlined />} size="small" danger></Button>
+              </Link>
+            )}
+            {hasAccess("delete") && (
+              <DeletePermohonan data={record} getData={getData} user={user} />
             )}
           </div>
         );
@@ -274,6 +387,46 @@ export default function TablePermohonanKredit() {
                   </Button>
                 </Link>
               )}
+              <ExportData
+                filename="Permohonan Kredit"
+                textDisplay
+                columns={[
+                  { header: "NO", key: "no", width: 6 },
+                  { header: "ID PERMOHNAN", key: "id", width: 30 },
+                  { header: "NOMOR CIF", key: "noCIF", width: 12 },
+                  { header: "NAMA PEMOHON", key: "fullname", width: 30 },
+                  { header: "NIK PEMOHON", key: "noNIK", width: 30 },
+                  { header: "PRODUK", key: "produk", width: 30 },
+                  { header: "TUJUAN PENGGUNAAN", key: "purposeUse", width: 30 },
+                  { header: "FILES", key: "files", width: 50 },
+                  { header: "KETERANGAN", key: "description", width: 30 },
+                  { header: "LAST ACTIVITY", key: "activities", width: 50 },
+                  { header: "MARKETING", key: "marketing", width: 20 },
+                  { header: "CREATED_AT", key: "createdAt", width: 20 },
+                ]}
+                rows={data.map((d, i) => ({
+                  no: i + 1,
+                  id: d.id,
+                  noCIF: d.Pemohon.noCIF,
+                  fullname: d.Pemohon.fullname,
+                  noNIK: d.Pemohon.NIK,
+                  produk: d.Produk.name,
+                  purposeUse: d.purposeUse,
+                  files: d.RootFiles.flatMap((rf) => ({
+                    name: rf.name,
+                    files: rf.Files,
+                  }))
+                    .map(
+                      (f) =>
+                        `${f.name} (${f.files.map((f) => f.name).join(",")});`
+                    )
+                    .join(","),
+                  description: d.description,
+                  activities: d.activity,
+                  marketing: d.User && d.User.fullname,
+                  createdAt: moment(d.createdAt).format("DD/MM/YYYY"),
+                }))}
+              />
               <FilterOption
                 items={jeniss.map((j) => ({ label: j.name, value: j.id }))}
                 value={jenisId}
@@ -318,10 +471,11 @@ const DeletePermohonan = ({
 }: {
   data: IPermohonanKredit;
   getData: Function;
-  user: IUser;
+  user?: IUser;
 }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { modal } = App.useApp();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -335,27 +489,27 @@ const DeletePermohonan = ({
       .then((res) => res.json())
       .then(async (res) => {
         if (res.status === 201 || res.status === 200) {
-          Modal.success({
+          modal.success({
             title: "BERHASIL",
-            content: `Data ${data && data.fullname} berhasil dihapus`,
+            content: `Data ${data && data.Pemohon.fullname} berhasil dihapus`,
           });
           setOpen(false);
           getData();
           await fetch("/api/sendEmail", {
             method: "POST",
             body: JSON.stringify({
-              subject: `Permohonan Kredit ${data.fullname} Dihapus`,
-              description: `${user?.fullname} Berhasil menghapus data Permohonan Kredit ${data.fullname}`,
+              subject: `Permohonan Kredit ${data.Pemohon.fullname} Dihapus`,
+              description: `${user?.fullname} Berhasil menghapus data Permohonan Kredit ${data.Pemohon.fullname}`,
             }),
           });
           return;
         }
-        Modal.error({ title: "ERROR", content: res.msg });
+        modal.error({ title: "ERROR", content: res.msg });
         setLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        Modal.error({ title: "ERROR", content: "Internal Server Error" });
+        modal.error({ title: "ERROR", content: "Internal Server Error" });
       });
     setLoading(false);
   };
@@ -370,7 +524,7 @@ const DeletePermohonan = ({
         loading={loading}
       ></Button>
       <Modal
-        title={`HAPUS PERMOHONAN KREDIT ${data.fullname.toUpperCase()}`}
+        title={`HAPUS PERMOHONAN KREDIT ${data.Pemohon.fullname.toUpperCase()}`}
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => handleSubmit()}
@@ -397,7 +551,7 @@ export const DetailPermohonan = ({ data }: { data: IPermohonanKredit }) => {
         onClick={() => setOpen(true)}
       ></Button>
       <Modal
-        title={`DETAIL ${data.fullname}`}
+        title={`DETAIL ${data.Pemohon.fullname}`}
         open={open}
         footer={[]}
         onCancel={() => setOpen(false)}
@@ -451,7 +605,11 @@ const DataPemohon = ({ data }: { data: IPermohonanKredit }) => {
       <div className="flex flex-row items-center justify-between gap-2">
         <div>Nama Permohonan</div>
         <div>
-          <Input disabled value={data.fullname} style={{ color: "GrayText" }} />
+          <Input
+            disabled
+            value={data.Pemohon.fullname}
+            style={{ color: "GrayText" }}
+          />
         </div>
       </div>
       <div className="flex flex-row items-center justify-between gap-2">
@@ -459,7 +617,7 @@ const DataPemohon = ({ data }: { data: IPermohonanKredit }) => {
         <div>
           <Input
             disabled
-            value={data.NIK || ""}
+            value={data.Pemohon.NIK || ""}
             style={{ color: "GrayText" }}
           />
         </div>
@@ -475,11 +633,11 @@ const DataPemohon = ({ data }: { data: IPermohonanKredit }) => {
         </div>
       </div>
       <div className="flex flex-row items-center justify-between gap-2">
-        <div>Jenis Pemohon</div>
+        <div>Produk</div>
         <div>
           <Input
             disabled
-            value={data.JenisPemohon.name}
+            value={data.Produk.name || ""}
             style={{ color: "GrayText" }}
           />
         </div>
@@ -583,14 +741,9 @@ const BerkasBerkas = ({ files }: { files: IRootFiles }) => {
                   <MyPDFViewer
                     fileUrl={f.url}
                     download={(() => {
-                      const filter = f.allowDownload
-                        .split(",")
-                        .map(Number)
-                        .includes(user?.id || 0);
-                      if (hasAccess("download") || filter) {
+                      if (hasAccess("download")) {
                         return true;
                       }
-                      if (!f.allowDownload) return false;
                       return false;
                     })()}
                   />

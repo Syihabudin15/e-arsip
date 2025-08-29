@@ -2,6 +2,7 @@
 
 import { useUser } from "@/components/contexts/UserContext";
 import {
+  EditActivity,
   IDescription,
   IFiles,
   IPermohonanAction,
@@ -39,7 +40,7 @@ export default function TableDownload() {
   const [data, setData] = useState<IPermohonanAction[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { access, hasAccess } = useAccess("/request/downloads");
+  const { hasAccess } = useAccess("/request/downloads");
   const [dataKredit, setDataKredit] = useState<IPermohonanKredit[]>([]);
   const user = useUser();
 
@@ -152,7 +153,7 @@ export default function TableDownload() {
     },
     {
       title: "DATA KREDIT",
-      dataIndex: ["PermohonanKredit", "fullname"],
+      dataIndex: ["PermohonanKredit", "Pemohon", "fullname"],
       key: "fullname",
       className: "text-xs",
       width: 200,
@@ -426,7 +427,7 @@ const ProsesDownloadFile = ({
               description: `${
                 user?.fullname
               } Berhasil melakukan proses download file pada data permohonan ${
-                data.PermohonanKredit.fullname
+                data.PermohonanKredit.Pemohon.fullname
               } dengan status ${data.statusAction}. ${
                 data.statusAction === StatusAction.APPROVED
                   ? `sekarang ${data.Requester.fullname} dapat mendownload berkas-berkas tersebut. <br/> Berikut detail dari data data yang telah disetujui untuk di download :`
@@ -445,12 +446,40 @@ const ProsesDownloadFile = ({
     setLoading(false);
   };
 
+  const handleHasDownload = async (currFile: any) => {
+    if (!currFile) return;
+    const tempAct = {
+      time: moment().format("DD/MM/YYYY HH:mm"),
+      desc: `${user?.fullname}: berhasil mendownload file ${currFile.name}`,
+      user: user?.fullname,
+    };
+
+    await fetch("/api/request", {
+      method: "PATCH",
+      body: JSON.stringify({
+        actionId: data.id,
+        activities: tempAct,
+        File: currFile,
+      }),
+    })
+      .then((res) => res.json())
+      .then(async () => {
+        setOpen(false);
+        getData();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   return (
     <div>
       <Button
         size="small"
         type="primary"
-        // disabled={data.statusAction === StatusAction.APPROVED}
+        disabled={
+          hasAccess("detail") && data.statusAction !== StatusAction.APPROVED
+        }
         icon={
           data.statusAction === StatusAction.APPROVED ? (
             <FolderOutlined />
@@ -479,7 +508,10 @@ const ProsesDownloadFile = ({
                   label: f.name,
                   key: f.name + Date.now(),
                   children: (
-                    <div className="h-[72vh]">
+                    <div
+                      className="h-[72vh]"
+                      onClick={() => console.log({ f })}
+                    >
                       <MyPDFViewer
                         fileUrl={f.url}
                         download={(() => {
@@ -490,9 +522,9 @@ const ProsesDownloadFile = ({
                           if (hasAccess("download") || filter) {
                             return true;
                           }
-                          if (!f.allowDownload) return false;
                           return false;
                         })()}
+                        onDownload={() => handleHasDownload(f)}
                       />
                     </div>
                   ),
@@ -513,7 +545,7 @@ const ProsesDownloadFile = ({
               />
               <FormInput
                 label="DATA KREDIT"
-                value={data.PermohonanKredit.fullname}
+                value={data.PermohonanKredit.Pemohon.fullname}
                 disable
               />
               {data.RootFiles.map((rf) => (
@@ -649,7 +681,7 @@ const CreateDownloadFile = ({
               description: `${
                 user?.fullname
               } berhasil mengajukan permohonan download file baru untuk data kredit ${
-                selected?.fullname
+                selected?.Pemohon.fullname
               } <br/><br/> ${filesSelected.map((f) => f.name).join(",")}`,
             }),
           });
@@ -695,7 +727,10 @@ const CreateDownloadFile = ({
               if (find.length === 0) return alert("Invalid Data Kredit");
               setSelected(find[0]);
             }}
-            options={data.map((d) => ({ label: d.fullname, value: d.id }))}
+            options={data.map((d) => ({
+              label: d.Pemohon.fullname,
+              value: d.id,
+            }))}
           />
           {selected && (
             <FormInput
@@ -714,7 +749,7 @@ const CreateDownloadFile = ({
               }}
               options={selected.RootFiles.flatMap((rf) => rf.Files).map(
                 (f) => ({
-                  label: `${f.name} (${f.RootFiles.name})`,
+                  label: `${f.name}`,
                   value: f.url,
                   disabled: f.allowDownload
                     .split(",")

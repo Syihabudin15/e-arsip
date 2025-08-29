@@ -57,39 +57,64 @@ model User {
 }
 
 model JenisPemohon {
-  id         Int    @id @default(autoincrement())
-  name       String @unique
-  keterangan String @db.Text
+  id         Int     @id @default(autoincrement())
+  name       String  @unique
+  keterangan String?
 
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  Pemohon   Pemohon[]
+}
+
+model Pemohon {
+  id               Int                @id @default(autoincrement())
+  fullname         String
+  NIK              String?
+  noCIF            String?
   status           Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @default(now())
+  JenisPemohon     JenisPemohon       @relation(fields: [jenisPemohonId], references: [id])
+  jenisPemohonId   Int
   PermohonanKredit PermohonanKredit[]
+
+  @@index([jenisPemohonId])
 }
 
 model PermohonanKredit {
   id            Int     @id @default(autoincrement())
-  fullname      String
-  NIK           String?
   purposeUse    String?
   accountNumber String?
-  noCIF         String?
   description   String? @db.Text
   activity      String? @db.Text
 
   status           Boolean            @default(true)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @default(now())
-  JenisPemohon     JenisPemohon       @relation(fields: [jenisPemohonId], references: [id])
   User             User               @relation(fields: [userId], references: [id])
-  jenisPemohonId   Int
+  Produk           Produk             @relation(fields: [produkId], references: [id])
+  Pemohon          Pemohon            @relation(fields: [pemohonId], references: [id])
   userId           Int
+  produkId         Int
   Files            Files[]
+  pemohonId        Int
   PermohonanAction PermohonanAction[]
 
-  @@index([jenisPemohonId])
   @@index([createdAt])
   @@index([userId])
+  @@index([pemohonId])
+  @@index([produkId])
+}
+
+model Produk {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique
+  name        String
+  description String?
+  status      Boolean @default(true)
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now())
+  PermohonanKredit PermohonanKredit[]
 }
 
 model RootFiles {

@@ -22,6 +22,7 @@ import {
   MenuFoldOutlined,
   MenuOutlined,
   MenuUnfoldOutlined,
+  ProductOutlined,
   RobotOutlined,
   TeamOutlined,
   UserOutlined,
@@ -168,6 +169,11 @@ export const menuItems = [
     label: "Role Management",
     icon: <KeyOutlined />,
     key: "/roles",
+  },
+  {
+    label: "Produk Management",
+    icon: <ProductOutlined />,
+    key: "/produk",
   },
   {
     label: "Logs Activitas",

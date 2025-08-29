@@ -43,6 +43,7 @@ export const FormInput = (params: IFormInput) => {
           <Select
             value={params.value}
             mode={params.optionsMode}
+            maxLength={params.optionsLength}
             onChange={(e) => params.onChange && params.onChange(e)}
             disabled={params.disable}
             options={params.options}
@@ -52,6 +53,7 @@ export const FormInput = (params: IFormInput) => {
               b?.label.toLowerCase().includes(a.toLowerCase())
             }
             showSearch
+            onSearch={(e) => params.onSearch && params.onSearch(e)}
           />
         )}
         {!params.type && (

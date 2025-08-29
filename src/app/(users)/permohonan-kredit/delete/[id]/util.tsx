@@ -1,25 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  IFiles,
-  IPermohonanKredit,
-  IRootFiles,
-} from "@/components/IInterfaces";
+import { IFiles, IRootFiles, IRootFilesPA } from "@/components/IInterfaces";
 import { FileOutlined, LoadingOutlined } from "@ant-design/icons";
 import { App, Button, Checkbox, Modal, Spin } from "antd";
 import { FormInput } from "@/components/utils/FormUtils";
 import dynamic from "next/dynamic";
-import { ENeedAction, StatusAction } from "@prisma/client";
+import {
+  ENeedAction,
+  Pemohon,
+  PermohonanKredit,
+  StatusAction,
+} from "@prisma/client";
 import { useUser } from "@/components/contexts/UserContext";
 import moment from "moment";
 const MyPDFViewer = dynamic(() =>
   import("@/components/utils/LayoutUtil").then((d) => d.MyPDFViewer)
 );
 
+interface IPerKredit extends PermohonanKredit {
+  RootFiles: IRootFilesPA[];
+  Pemohon: Pemohon;
+}
+
 export default function DeleteFiles({ id }: { id: number }) {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<IPermohonanKredit>();
+  const [data, setData] = useState<IPerKredit>();
   const [open, setOpen] = useState(false);
   const [desc, setDesc] = useState<string>();
   const [tempData, setTempData] = useState<IRootFiles[]>([]);
@@ -77,7 +83,7 @@ export default function DeleteFiles({ id }: { id: number }) {
               description: `${
                 user?.fullname
               } berhasil mengajukan permohonan hapus file baru untuk data kredit ${
-                data?.fullname
+                data?.Pemohon.fullname
               } <br/><br/>${tempData
                 .filter((t) => t.Files.length !== 0)
                 .map(
@@ -112,11 +118,12 @@ export default function DeleteFiles({ id }: { id: number }) {
       <div className="p-2">
         <div className="text-lg py-4 font-bold border-b border-blue-500">
           <p>
-            BERKAS BERKAS {data && data.fullname} ({data && data.NIK})
+            BERKAS BERKAS {data && data.Pemohon.fullname} (
+            {data && data.Pemohon.NIK})
           </p>
         </div>
         <div className="flex flex-wrap gap-4 justify-between">
-          {data.RootFiles.map((d) => (
+          {data.RootFiles.map((d: any) => (
             <Items data={d} key={d.id} setSelected={setTempData} />
           ))}
         </div>
@@ -166,7 +173,7 @@ const Items = ({
   data,
   setSelected,
 }: {
-  data: IRootFiles;
+  data: IRootFilesPA;
   setSelected: Function;
 }) => {
   const [tempData, setTempData] = useState<IRootFiles>({ ...data, Files: [] });
@@ -224,7 +231,10 @@ const Items = ({
               <Button
                 icon={<FileOutlined />}
                 size="small"
-                onClick={() => setSelectedFile(file)}
+                onClick={() => {
+                  const { PermohonanKredit, ...fileSelected } = file;
+                  setSelectedFile(fileSelected);
+                }}
               ></Button>
             </div>
           </Checkbox>

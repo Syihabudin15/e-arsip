@@ -27,7 +27,7 @@ export default function DashboardMaster() {
   const columnsPermohonan = [
     {
       title: "MARKETING",
-      dataIndex: ["Document", "User", ["fullname"]],
+      dataIndex: ["User", "fullname"],
       key: "marketingName",
       className: "text-xs",
       width: 200,
@@ -41,8 +41,23 @@ export default function DashboardMaster() {
       },
     },
     {
+      title: "NO CIF",
+      dataIndex: ["Pemohon", "noCIF"],
+      key: "noCIF",
+      className: "text-xs",
+      width: 150,
+      onHeaderCell: () => {
+        return {
+          ["style"]: {
+            textAlign: "center" as React.CSSProperties["textAlign"],
+            fontSize: 12,
+          },
+        };
+      },
+    },
+    {
       title: "NAMA LENGKAP",
-      dataIndex: "fullname",
+      dataIndex: ["Pemohon", "fullname"],
       key: "fullname",
       className: "text-xs",
       width: 200,
@@ -57,10 +72,10 @@ export default function DashboardMaster() {
     },
     {
       title: "NIK",
-      dataIndex: "NIK",
+      dataIndex: ["Pemohon", "NIK"],
       key: "NIK",
       className: "text-xs",
-      width: 200,
+      width: 150,
       onHeaderCell: () => {
         return {
           ["style"]: {
@@ -72,7 +87,7 @@ export default function DashboardMaster() {
     },
     {
       title: "JENIS PEMOHON",
-      dataIndex: ["JenisPemohon", "name"],
+      dataIndex: ["Pemohon", "JenisPemohon", "name"],
       key: "jenis",
       className: "text-xs",
       width: 150,

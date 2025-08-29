@@ -7,13 +7,17 @@ import { zoomPlugin } from "@react-pdf-viewer/zoom";
 import { useState } from "react";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
+import { Button, Tooltip } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 
 export function MyPDFViewer({
   fileUrl,
   download,
+  onDownload,
 }: {
   fileUrl: string;
   download?: boolean;
+  onDownload?: Function;
 }) {
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     renderToolbar: (Toolbar) => (
@@ -30,8 +34,32 @@ export function MyPDFViewer({
             GoToNextPage,
             Print,
             EnterFullScreen,
-            Download,
           } = slots;
+
+          const CustomDownload = () => {
+            const handleDownload = async () => {
+              const response = await fetch(fileUrl);
+              const blob = await response.blob();
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(blob);
+              link.download = fileUrl.split("/").pop() || "file.pdf";
+              link.click();
+
+              onDownload && onDownload();
+            };
+
+            return (
+              <Button
+                onClick={handleDownload}
+                style={{ background: "transparent", border: "none" }}
+              >
+                <Tooltip title="Download">
+                  <DownloadOutlined />
+                </Tooltip>
+              </Button>
+            );
+          };
+
           return (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <ShowSearchPopover />
@@ -42,7 +70,7 @@ export function MyPDFViewer({
               <CurrentPageInput /> / <NumberOfPages />
               <GoToNextPage />
               {download && <Print />}
-              {download && <Download />}
+              {download && <CustomDownload />}
               <EnterFullScreen />
             </div>
           );

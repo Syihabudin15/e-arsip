@@ -1,8 +1,4 @@
-import {
-  IFiles,
-  IPermohonanKredit,
-  IRootFiles,
-} from "@/components/IInterfaces";
+import { IPermohonanKredit } from "@/components/IInterfaces";
 import prisma from "@/components/Prisma";
 import { logActivity } from "@/components/utils/Auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -25,15 +21,24 @@ export const GET = async (req: NextRequest) => {
         status: true,
         ...(search && {
           OR: [
-            { fullname: { contains: search } },
-            { NIK: { contains: search } },
+            { accountNumber: { contains: search } },
+            {
+              Pemohon: {
+                OR: [
+                  { fullname: { contains: search } },
+                  { NIK: { contains: search } },
+                  { noCIF: { contains: search } },
+                ],
+              },
+            },
           ],
         }),
-        ...(jenisId !== 0 && { jenisPemohonId: jenisId }),
+        ...(jenisId !== 0 && { produkId: jenisId }),
       },
       include: {
-        JenisPemohon: true,
+        Produk: true,
         User: true,
+        Pemohon: true,
       },
       skip,
       take: pageSize,
@@ -43,35 +48,34 @@ export const GET = async (req: NextRequest) => {
         status: true,
         ...(search && {
           OR: [
-            { fullname: { contains: search } },
-            { NIK: { contains: search } },
+            { accountNumber: { contains: search } },
+            {
+              Pemohon: {
+                OR: [
+                  { fullname: { contains: search } },
+                  { NIK: { contains: search } },
+                  { noCIF: { contains: search } },
+                ],
+              },
+            },
           ],
         }),
-        ...(jenisId !== 0 && { jenisPemohonId: jenisId }),
+        ...(jenisId !== 0 && { produkId: jenisId }),
       },
     });
 
-    const findRootFile = await prisma.rootFiles.findMany({
-      orderBy: { order: "asc" },
-    });
     const newData: IPermohonanKredit[] = [];
 
     for (const permohonan of find) {
-      const rf: IRootFiles[] = [];
-      for (const root of findRootFile) {
-        const files: IFiles[] = <any>await prisma.files.findMany({
-          where: {
-            rootFilesId: root.id,
-            permohonanKreditId: permohonan.id,
+      const findRootFile = await prisma.rootFiles.findMany({
+        orderBy: { order: "asc" },
+        include: {
+          Files: {
+            where: { permohonanKreditId: permohonan.id },
           },
-          include: {
-            PermohonanAction: true,
-            RootFiles: true,
-          },
-        });
-        rf.push({ ...root, Files: files });
-      }
-      newData.push({ ...permohonan, RootFiles: rf });
+        },
+      });
+      newData.push({ ...permohonan, RootFiles: findRootFile });
     }
 
     return NextResponse.json(
@@ -87,7 +91,18 @@ export const GET = async (req: NextRequest) => {
 export const POST = async (req: NextRequest) => {
   const data: IPermohonanKredit = await req.json();
   try {
-    const { id, JenisPemohon, User, RootFiles, ...permohonan } = data;
+    const { id, Produk, User, RootFiles, Pemohon, ...permohonan } = data;
+    if (data.pemohonId === 0) {
+      const savePemohon = await prisma.pemohon.create({
+        data: {
+          fullname: Pemohon.fullname,
+          noCIF: Pemohon.noCIF,
+          NIK: Pemohon.noCIF,
+          jenisPemohonId: Pemohon.jenisPemohonId,
+        },
+      });
+      permohonan.pemohonId = savePemohon.id;
+    }
     await prisma.$transaction(async (tx) => {
       const pk = await tx.permohonanKredit.create({
         data: permohonan,
@@ -108,7 +123,7 @@ export const POST = async (req: NextRequest) => {
       "permohonanKredit",
       JSON.stringify(data),
       JSON.stringify({ status: 201, msg: "OK" }),
-      "Berhasil Menambahkan Permohonan Kredit " + data.fullname
+      "Berhasil Menambahkan Permohonan Kredit " + data.Pemohon.fullname
     );
     return NextResponse.json({ msg: "OK", status: 201 }, { status: 201 });
   } catch (err) {
@@ -119,9 +134,12 @@ export const POST = async (req: NextRequest) => {
 export const PUT = async (req: NextRequest) => {
   const data: IPermohonanKredit = await req.json();
   try {
-    const { id, JenisPemohon, User, RootFiles, ...permohonan } = data;
+    const { id, Produk, User, RootFiles, Pemohon, ...permohonan } = data;
     await prisma.$transaction([
-      prisma.permohonanKredit.update({ where: { id: id }, data: permohonan }),
+      prisma.permohonanKredit.update({
+        where: { id: id },
+        data: { ...permohonan, updatedAt: new Date() },
+      }),
       prisma.files.deleteMany({
         where: { permohonanKreditId: id },
       }),
@@ -142,7 +160,7 @@ export const PUT = async (req: NextRequest) => {
       JSON.stringify(data),
       JSON.stringify({ status: 201, msg: "OK" }),
       `Berhasil ${data.status ? "Update" : "Hapus"} Permohonan Kredit ${
-        data.fullname
+        data.Pemohon.fullname
       }`
     );
     return NextResponse.json({ msg: "OK", status: 201 }, { status: 201 });

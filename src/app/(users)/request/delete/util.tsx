@@ -29,7 +29,7 @@ export default function TableDeletes() {
   const [data, setData] = useState<IPermohonanAction[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { access, hasAccess } = useAccess("/request/delete");
+  const { hasAccess } = useAccess("/request/delete");
 
   const getData = async () => {
     setLoading(true);
@@ -133,7 +133,7 @@ export default function TableDeletes() {
     },
     {
       title: "DATA KREDIT",
-      dataIndex: ["PermohonanKredit", "fullname"],
+      dataIndex: ["PermohonanKredit", "Pemohon", "fullname"],
       key: "fullname",
       className: "text-xs",
       width: 200,
@@ -286,7 +286,7 @@ export default function TableDeletes() {
       render(value, record, index) {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
-            {hasAccess("update") && (
+            {(hasAccess("update") || hasAccess("detal")) && (
               <ProsesDeleteFile
                 data={record}
                 getData={getData}
@@ -402,7 +402,7 @@ const ProsesDeleteFile = ({
               description: `${
                 user?.fullname
               } Berhasil melakukan proses hapus file pada data permohonan ${
-                data.PermohonanKredit.fullname
+                data.PermohonanKredit.Pemohon.fullname
               } dengan status ${data.statusAction}. ${
                 data.statusAction === StatusAction.APPROVED &&
                 "sekarang data data tersebut telah dihapus dari database. <br/> Berikut detail dari data data yang telah dihapus :"
@@ -482,7 +482,7 @@ const ProsesDeleteFile = ({
               />
               <FormInput
                 label="DATA KREDIT"
-                value={data.PermohonanKredit.fullname}
+                value={data.PermohonanKredit.Pemohon.fullname}
                 disable
               />
               {data.RootFiles.map((rf) => (
@@ -508,50 +508,54 @@ const ProsesDeleteFile = ({
                     />
                   )
                 )}
-              <div className="p-2 font-bold bg-gradient-to-br from-purple-500 to-blue-500 text-gray-50">
-                <p>PROSES PERMOHONAN</p>
-              </div>
-              <div className="flex flex-col gap-1">
-                <FormInput
-                  label="Status"
-                  value={status}
-                  onChange={(e: any) => setStatus(e)}
-                  type="option"
-                  options={[
-                    {
-                      label: StatusAction.PENDING,
-                      value: StatusAction.PENDING,
-                    },
-                    {
-                      label: StatusAction.APPROVED,
-                      value: StatusAction.APPROVED,
-                    },
-                    {
-                      label: StatusAction.REJECTED,
-                      value: StatusAction.REJECTED,
-                    },
-                  ]}
-                  required
-                />
-                <FormInput
-                  label="Keterangan"
-                  value={desc}
-                  onChange={(e: any) => setDesc(e)}
-                  type="area"
-                />
-                <div className="flex justify-end">
-                  <Button
-                    type="primary"
-                    loading={loading}
-                    disabled={
-                      !status || data.statusAction === StatusAction.APPROVED
-                    }
-                    onClick={() => handleSubmit()}
-                  >
-                    Submit
-                  </Button>
-                </div>
-              </div>
+              {hasAccess("update") && (
+                <>
+                  <div className="p-2 font-bold bg-gradient-to-br from-purple-500 to-blue-500 text-gray-50">
+                    <p>PROSES PERMOHONAN</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <FormInput
+                      label="Status"
+                      value={status}
+                      onChange={(e: any) => setStatus(e)}
+                      type="option"
+                      options={[
+                        {
+                          label: StatusAction.PENDING,
+                          value: StatusAction.PENDING,
+                        },
+                        {
+                          label: StatusAction.APPROVED,
+                          value: StatusAction.APPROVED,
+                        },
+                        {
+                          label: StatusAction.REJECTED,
+                          value: StatusAction.REJECTED,
+                        },
+                      ]}
+                      required
+                    />
+                    <FormInput
+                      label="Keterangan"
+                      value={desc}
+                      onChange={(e: any) => setDesc(e)}
+                      type="area"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        type="primary"
+                        loading={loading}
+                        disabled={
+                          !status || data.statusAction === StatusAction.APPROVED
+                        }
+                        onClick={() => handleSubmit()}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

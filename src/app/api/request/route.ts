@@ -1,4 +1,4 @@
-import cloudinary from "@/components/Cloudinary";
+// import cloudinary from "@/components/Cloudinary";
 import {
   EditActivity,
   IDescription,
@@ -10,6 +10,9 @@ import { logActivity } from "@/components/utils/Auth";
 import { ENeedAction, Files, StatusAction } from "@prisma/client";
 import moment from "moment-timezone";
 import { NextRequest, NextResponse } from "next/server";
+
+import { getContainerClient } from "@/components/Azure";
+const containerClient = getContainerClient();
 
 export const POST = async (req: NextRequest) => {
   const data = await req.json();
@@ -224,7 +227,11 @@ export const PUT = async (req: NextRequest) => {
           ),
         ]);
         for (const file of Files) {
-          await cloudinary.uploader.destroy(file.url);
+          // await cloudinary.uploader.destroy(file.url);
+          const urlParts = file.url.split("/").slice(4); // ["testing", "file.pdf"]
+          const blobName = decodeURIComponent(urlParts.join("/")); // "testing/file.pdf"
+          const blockBlobClient = containerClient.getBlockBlobClient(blobName!);
+          await blockBlobClient.deleteIfExists();
         }
       }
       await logActivity(

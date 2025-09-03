@@ -38,30 +38,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="flex justify-center sm:justify-end items-center w-full h-[92vh] bg-gradient-to-br from-blue-500 to-red-400"
-      style={{
-        // backgroundImage: "url(/login-bg3.png)",
-        backgroundImage: "url(/2.jpg)",
-        ...(window && window.innerWidth > 600
-          ? {
-              backgroundSize: 990,
-            }
-          : {
-              backgroundSize: "cover",
-            }),
-      }}
-    >
-      <div className="h-full w-full hidden sm:flex justify-center items-center">
-        {/* <Image
-          src={"/login-bg.jpeg"}
-          alt="Login background"
-          width={920}
-          height={900}
-        /> */}
-        {/* <img src={"/login-bg.jpeg"} className="rounded-2xl" /> */}
+    <div className="flex justify-center sm:justify-end items-center w-full h-[92vh] bg-gradient-to-br from-blue-500 to-red-400">
+      <div className="flex-1 h-full">
+        <img
+          src={"/2.jpg"}
+          alt="bg-login-bank-rifi"
+          style={{ height: "100%", width: "100%" }}
+        />
       </div>
-      <div className="bg-slate-50 p-5 h-[60vh] sm:h-full w-[90vw] sm:w-[38vw] flex flex-col items-center justify-center rounded">
+      <div className="bg-slate-50 p-5 h-[60vh] sm:h-full w-[90vw] sm:w-[30vw] flex flex-col items-center justify-center rounded">
         <Image
           src={"/rifi-login.jpeg"}
           alt="App Logo"

@@ -1,5 +1,3 @@
-// import { PrismaClient } from "@prisma/client";
-import { IPermission } from "@/components/IInterfaces";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 const prisma = new PrismaClient();

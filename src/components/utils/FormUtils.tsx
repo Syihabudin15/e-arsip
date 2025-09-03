@@ -305,31 +305,41 @@ const FormUploadInputFile = ({
   const handleUpload = async (file?: any) => {
     const formData = new FormData();
     formData.append("file", file || (tempFile as Blob));
-    formData.append("upload_preset", "ml_default");
-    formData.append(
-      "folder",
-      `${process.env.NEXT_PUBLIC_APP_FOLDER || ""}/${data.name}`
-    );
-    formData.append("public_id", `${currFiles.name}_${Date.now()}`);
+    // formData.append("upload_preset", "ml_default");
+    // formData.append(
+    //   "folder",
+    //   `${process.env.NEXT_PUBLIC_APP_FOLDER || ""}/${data.name}`
+    // );
+    // formData.append("public_id", `${currFiles.name}_${Date.now()}`);
 
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/raw/upload`,
-      {
+    // const res = await fetch(
+    //   `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/raw/upload`,
+    //   {
+    //     method: "POST",
+    //     body: formData,
+    //   }
+    // );
+    try {
+      const res = await fetch(`/api/upload`, {
         method: "POST",
         body: formData,
-      }
-    );
-
-    const resData = await res.json();
-    if (resData.secure_url) {
-      setCurrFiles({
-        ...currFiles,
-        url: resData.secure_url,
-        allowDownload: "",
       });
-    } else {
-      notification.error({ message: resData.error.message });
-      if (open) setErrMsg(resData.error.message);
+
+      const resData = await res.json();
+      if (resData.secure_url) {
+        setCurrFiles({
+          ...currFiles,
+          url: resData.secure_url,
+          allowDownload: "",
+        });
+      } else {
+        notification.error({ message: resData.error.message });
+        if (open) setErrMsg(resData.error.message);
+      }
+    } catch (err) {
+      console.log(err);
+      notification.error({ message: "Internal Server Error" });
+      if (open) setErrMsg("Internal Server Error");
     }
   };
 

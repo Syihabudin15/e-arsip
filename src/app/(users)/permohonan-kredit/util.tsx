@@ -54,6 +54,11 @@ export default function TablePermohonanKredit() {
   const [jeniss, setJeniss] = useState<Produk[]>([]);
   const { hasAccess } = useAccess("/permohonan-kredit");
   const user = useUser();
+  const [selected, setSelected] = useState<IPermohonanKredit | undefined>(
+    undefined
+  );
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openDetail, setOpenDetail] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -234,15 +239,6 @@ export default function TablePermohonanKredit() {
                   {"{"}
                   {rf.name} ({rf.Files.map((f) => f.name).join(",")}){"};"}{" "}
                   <br />
-                  <br />
-                </>
-              ))}
-              {record.RootFiles.flatMap((rf) => rf.Files).map((p) => (
-                <>
-                  {"{"}
-                  {p.name}
-                  {"};"} <br />
-                  <br />
                 </>
               ))}
             </Paragraph>
@@ -343,7 +339,17 @@ export default function TablePermohonanKredit() {
       render(value, record, index) {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
-            {hasAccess("detail") && <DetailPermohonan data={record} />}
+            {hasAccess("detail") && (
+              <Button
+                icon={<FolderOutlined />}
+                type="primary"
+                size="small"
+                onClick={() => {
+                  setSelected(record);
+                  setOpenDetail(true);
+                }}
+              ></Button>
+            )}
             {hasAccess("update") && (
               <Link href={"/permohonan-kredit/" + record.id}>
                 <Button
@@ -359,7 +365,17 @@ export default function TablePermohonanKredit() {
               </Link>
             )}
             {hasAccess("delete") && (
-              <DeletePermohonan data={record} getData={getData} user={user} />
+              <Button
+                icon={<DeleteOutlined />}
+                size="small"
+                type="primary"
+                danger
+                onClick={() => {
+                  setSelected(record);
+                  setOpenDelete(true);
+                }}
+                loading={loading}
+              ></Button>
             )}
           </div>
         );
@@ -368,99 +384,123 @@ export default function TablePermohonanKredit() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">Permohonan Kredit</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between overflow-auto">
-            <div className="flex gap-2">
-              {hasAccess("write") && (
-                <Link href={"/permohonan-kredit/create"}>
-                  <Button
-                    icon={<PlusCircleOutlined />}
-                    type="primary"
-                    size="small"
-                  >
-                    New
-                  </Button>
-                </Link>
-              )}
-              <ExportData
-                filename="Permohonan Kredit"
-                textDisplay
-                columns={[
-                  { header: "NO", key: "no", width: 6 },
-                  { header: "ID PERMOHNAN", key: "id", width: 30 },
-                  { header: "NOMOR CIF", key: "noCIF", width: 12 },
-                  { header: "NAMA PEMOHON", key: "fullname", width: 30 },
-                  { header: "NIK PEMOHON", key: "noNIK", width: 30 },
-                  { header: "PRODUK", key: "produk", width: 30 },
-                  { header: "TUJUAN PENGGUNAAN", key: "purposeUse", width: 30 },
-                  { header: "FILES", key: "files", width: 50 },
-                  { header: "KETERANGAN", key: "description", width: 30 },
-                  { header: "LAST ACTIVITY", key: "activities", width: 50 },
-                  { header: "MARKETING", key: "marketing", width: 20 },
-                  { header: "CREATED_AT", key: "createdAt", width: 20 },
-                ]}
-                rows={data.map((d, i) => ({
-                  no: i + 1,
-                  id: d.id,
-                  noCIF: d.Pemohon.noCIF,
-                  fullname: d.Pemohon.fullname,
-                  noNIK: d.Pemohon.NIK,
-                  produk: d.Produk.name,
-                  purposeUse: d.purposeUse,
-                  files: d.RootFiles.flatMap((rf) => ({
-                    name: rf.name,
-                    files: rf.Files,
-                  }))
-                    .map(
-                      (f) =>
-                        `${f.name} (${f.files.map((f) => f.name).join(",")});`
-                    )
-                    .join(","),
-                  description: d.description,
-                  activities: d.activity,
-                  marketing: d.User && d.User.fullname,
-                  createdAt: moment(d.createdAt).format("DD/MM/YYYY"),
-                }))}
-              />
-              <FilterOption
-                items={jeniss.map((j) => ({ label: j.name, value: j.id }))}
-                value={jenisId}
-                onChange={(e: number) => setJenisId(e)}
-                width={150}
-              />
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">Permohonan Kredit</h1>
             </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex my-2 gap-2 justify-between overflow-auto">
+              <div className="flex gap-2">
+                {hasAccess("write") && (
+                  <Link href={"/permohonan-kredit/create"}>
+                    <Button
+                      icon={<PlusCircleOutlined />}
+                      type="primary"
+                      size="small"
+                    >
+                      New
+                    </Button>
+                  </Link>
+                )}
+                <ExportData
+                  filename="Permohonan Kredit"
+                  textDisplay
+                  columns={[
+                    { header: "NO", key: "no", width: 6 },
+                    { header: "ID PERMOHNAN", key: "id", width: 30 },
+                    { header: "NOMOR CIF", key: "noCIF", width: 12 },
+                    { header: "NAMA PEMOHON", key: "fullname", width: 30 },
+                    { header: "NIK PEMOHON", key: "noNIK", width: 30 },
+                    { header: "PRODUK", key: "produk", width: 30 },
+                    {
+                      header: "TUJUAN PENGGUNAAN",
+                      key: "purposeUse",
+                      width: 30,
+                    },
+                    { header: "FILES", key: "files", width: 50 },
+                    { header: "KETERANGAN", key: "description", width: 30 },
+                    { header: "LAST ACTIVITY", key: "activities", width: 50 },
+                    { header: "MARKETING", key: "marketing", width: 20 },
+                    { header: "CREATED_AT", key: "createdAt", width: 20 },
+                  ]}
+                  rows={data.map((d, i) => ({
+                    no: i + 1,
+                    id: d.id,
+                    noCIF: d.Pemohon.noCIF,
+                    fullname: d.Pemohon.fullname,
+                    noNIK: d.Pemohon.NIK,
+                    produk: d.Produk.name,
+                    purposeUse: d.purposeUse,
+                    files: d.RootFiles.flatMap((rf) => ({
+                      name: rf.name,
+                      files: rf.Files,
+                    }))
+                      .map(
+                        (f) =>
+                          `${f.name} (${f.files.map((f) => f.name).join(",")});`
+                      )
+                      .join(","),
+                    description: d.description,
+                    activities: d.activity,
+                    marketing: d.User && d.User.fullname,
+                    createdAt: moment(d.createdAt).format("DD/MM/YYYY"),
+                  }))}
+                />
+                <FilterOption
+                  items={jeniss.map((j) => ({ label: j.name, value: j.id }))}
+                  value={jenisId}
+                  onChange={(e: number) => setJenisId(e)}
+                  width={150}
+                />
+              </div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        rowKey={"id"}
+        columns={columns}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {selected && (
+        <DeletePermohonan
+          data={selected}
+          getData={getData}
+          user={user}
+          open={openDelete}
+          setOpen={setOpenDelete}
+          key={selected.id}
+        />
       )}
-      rowKey={"id"}
-      columns={columns}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+      {selected && (
+        <DetailPermohonan
+          data={selected}
+          open={openDelete}
+          setOpen={setOpenDetail}
+          key={selected.id}
+        />
+      )}
+    </div>
   );
 }
 
@@ -468,12 +508,15 @@ const DeletePermohonan = ({
   data,
   getData,
   user,
+  open,
+  setOpen,
 }: {
   data: IPermohonanKredit;
   getData: Function;
   user?: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { modal } = App.useApp();
 
@@ -515,14 +558,6 @@ const DeletePermohonan = ({
   };
   return (
     <div>
-      <Button
-        icon={<DeleteOutlined />}
-        size="small"
-        type="primary"
-        danger
-        onClick={() => setOpen(true)}
-        loading={loading}
-      ></Button>
       <Modal
         title={`HAPUS PERMOHONAN KREDIT ${data.Pemohon.fullname.toUpperCase()}`}
         open={open}
@@ -539,17 +574,17 @@ const DeletePermohonan = ({
   );
 };
 
-export const DetailPermohonan = ({ data }: { data: IPermohonanKredit }) => {
-  const [open, setOpen] = useState(false);
-
+export const DetailPermohonan = ({
+  data,
+  open,
+  setOpen,
+}: {
+  data: IPermohonanKredit;
+  open: boolean;
+  setOpen: Function;
+}) => {
   return (
     <div>
-      <Button
-        icon={<FolderOutlined />}
-        type="primary"
-        size="small"
-        onClick={() => setOpen(true)}
-      ></Button>
       <Modal
         title={`DETAIL ${data.Pemohon.fullname}`}
         open={open}

@@ -4,6 +4,7 @@ import { IPemohon, IPermohonanKredit } from "@/components/IInterfaces";
 import { FilterOption, FormInput } from "@/components/utils/FormUtils";
 import {
   DeleteOutlined,
+  FolderOutlined,
   FormOutlined,
   LoadingOutlined,
   PlusCircleOutlined,
@@ -37,6 +38,9 @@ export default function TableDokumen() {
   const [jeniss, setJeniss] = useState<JenisPemohon[]>([]);
   const { hasAccess } = useAccess("/document");
   const { modal } = App.useApp();
+  const [selected, setSelected] = useState<IPemohon | undefined>(undefined);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openUpsert, setOpenUpsert] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -155,6 +159,24 @@ export default function TableDokumen() {
       },
     },
     {
+      title: "JUMLAH PERMOHONAN",
+      dataIndex: "PermohonanKredit",
+      key: "jenisPemohon",
+      className: "text-xs text-center",
+      width: 100,
+      onHeaderCell: () => {
+        return {
+          ["style"]: {
+            textAlign: "center",
+            fontSize: 12,
+          },
+        };
+      },
+      render(value, record, index) {
+        return <>{record.PermohonanKredit.length}</>;
+      },
+    },
+    {
       title: "ACTION",
       dataIndex: "action",
       key: "action",
@@ -172,20 +194,27 @@ export default function TableDokumen() {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
             {hasAccess("update") && (
-              <UpsertPemohon
-                getData={getData}
-                record={record}
-                jeniss={jeniss}
-                hook={modal}
-              />
+              <Button
+                size="small"
+                icon={<FormOutlined />}
+                onClick={() => {
+                  setSelected(record);
+                  setOpenUpsert(true);
+                }}
+                type="primary"
+              ></Button>
             )}
             {hasAccess("delete") && (
-              <DeletePemohon
-                getData={getData}
-                record={record}
-                jeniss={jeniss}
-                hook={modal}
-              />
+              <Button
+                size="small"
+                icon={<DeleteOutlined />}
+                onClick={() => {
+                  setSelected(record);
+                  setOpenDelete(true);
+                }}
+                type="primary"
+                danger
+              ></Button>
             )}
           </div>
         );
@@ -194,60 +223,92 @@ export default function TableDokumen() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">Dokumen</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between overflow-auto">
-            <div className="flex gap-2">
-              {hasAccess("write") && (
-                <UpsertPemohon getData={getData} jeniss={jeniss} hook={modal} />
-              )}
-              <FilterOption
-                items={jeniss.map((j) => ({ label: j.name, value: j.id }))}
-                value={jenisId}
-                onChange={(e: number) => setJenisId(e)}
-                width={150}
-              />
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">Dokumen</h1>
             </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex my-2 gap-2 justify-between overflow-auto">
+              <div className="flex gap-2">
+                {hasAccess("write") && (
+                  <Button
+                    size="small"
+                    icon={<PlusCircleOutlined />}
+                    onClick={() => {
+                      setSelected(undefined);
+                      setOpenUpsert(true);
+                    }}
+                    type="primary"
+                  >
+                    New
+                  </Button>
+                )}
+                <FilterOption
+                  items={jeniss.map((j) => ({ label: j.name, value: j.id }))}
+                  value={jenisId}
+                  onChange={(e: number) => setJenisId(e)}
+                  width={150}
+                />
+              </div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        rowKey={"id"}
+        columns={columns}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+        expandable={{
+          expandedRowRender: (record) => (
+            <TablePermohonan
+              data={record.PermohonanKredit}
+              hasAccess={hasAccess}
+            />
+          ),
+          rowExpandable: (record) => record.PermohonanKredit.length !== 0,
+        }}
+      />
+      {selected && (
+        <DeletePemohon
+          getData={getData}
+          record={selected}
+          jeniss={jeniss}
+          hook={modal}
+          open={openDelete}
+          setOpen={setOpenDelete}
+          key={selected.id}
+        />
       )}
-      rowKey={"id"}
-      columns={columns}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-      expandable={{
-        expandedRowRender: (record) => (
-          <TablePermohonan
-            data={record.PermohonanKredit}
-            hasAccess={hasAccess}
-          />
-        ),
-        rowExpandable: (record) => record.PermohonanKredit.length !== 0,
-      }}
-    />
+      <UpsertPemohon
+        getData={getData}
+        record={selected}
+        jeniss={jeniss}
+        hook={modal}
+        key={selected && selected.id}
+        open={openUpsert}
+        setOpen={setOpenUpsert}
+      />
+    </div>
   );
 }
 
@@ -256,13 +317,16 @@ const UpsertPemohon = ({
   getData,
   jeniss,
   hook,
+  open,
+  setOpen,
 }: {
   record?: Pemohon;
   getData: Function;
   jeniss: JenisPemohon[];
   hook: HookAPI;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Pemohon>(record || defaultPemohon);
 
@@ -294,14 +358,6 @@ const UpsertPemohon = ({
 
   return (
     <div>
-      <Button
-        size="small"
-        icon={record ? <FormOutlined /> : <PlusCircleOutlined />}
-        onClick={() => setOpen(true)}
-        type="primary"
-      >
-        {!record && "New"}
-      </Button>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}
@@ -351,13 +407,16 @@ const DeletePemohon = ({
   getData,
   jeniss,
   hook,
+  open,
+  setOpen,
 }: {
   record: Pemohon;
   getData: Function;
   jeniss: JenisPemohon[];
   hook: HookAPI;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -385,15 +444,6 @@ const DeletePemohon = ({
 
   return (
     <div>
-      <Button
-        size="small"
-        icon={<DeleteOutlined />}
-        onClick={() => setOpen(true)}
-        type="primary"
-        danger
-      >
-        {!record && "New"}
-      </Button>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}
@@ -437,6 +487,11 @@ const TablePermohonan = ({
   data: IPermohonanKredit[];
   hasAccess: Function;
 }) => {
+  const [openDetail, setOpenDetail] = useState(false);
+  const [selected, setSelected] = useState<IPermohonanKredit | undefined>(
+    undefined
+  );
+
   const columns: TableProps<IPermohonanKredit>["columns"] = [
     {
       title: "NAMA PRODUK",
@@ -533,7 +588,17 @@ const TablePermohonan = ({
       render(value, record, index) {
         return (
           <div className="flex justify-center">
-            {hasAccess("detail") && <DetailPermohonan data={record} />}
+            {hasAccess("detail") && (
+              <Button
+                icon={<FolderOutlined />}
+                type="primary"
+                size="small"
+                onClick={() => {
+                  setSelected(record);
+                  setOpenDetail(true);
+                }}
+              ></Button>
+            )}
           </div>
         );
       },
@@ -549,6 +614,14 @@ const TablePermohonan = ({
         dataSource={data}
         pagination={false}
       />
+      {selected && (
+        <DetailPermohonan
+          data={selected}
+          open={openDetail}
+          setOpen={setOpenDetail}
+          key={selected.id}
+        />
+      )}
     </div>
   );
 };

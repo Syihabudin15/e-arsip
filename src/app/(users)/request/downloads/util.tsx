@@ -43,6 +43,8 @@ export default function TableDownload() {
   const { hasAccess } = useAccess("/request/downloads");
   const [dataKredit, setDataKredit] = useState<IPermohonanKredit[]>([]);
   const user = useUser();
+  const [selected, setSelected] = useState<IPermohonanAction>();
+  const [open, setOpen] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -307,12 +309,25 @@ export default function TableDownload() {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
             {(hasAccess("update") || hasAccess("detail")) && (
-              <ProsesDownloadFile
-                data={record}
-                getData={getData}
-                user={user || null}
-                hasAccess={hasAccess}
-              />
+              <Button
+                size="small"
+                type="primary"
+                disabled={
+                  hasAccess("detail") &&
+                  record.statusAction !== StatusAction.APPROVED
+                }
+                icon={
+                  record.statusAction === StatusAction.APPROVED ? (
+                    <FolderOutlined />
+                  ) : (
+                    <FormOutlined />
+                  )
+                }
+                onClick={() => {
+                  setSelected(record);
+                  setOpen(true);
+                }}
+              ></Button>
             )}
           </div>
         );
@@ -321,49 +336,62 @@ export default function TableDownload() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">PERMOHONAN DOWNLOAD FILE</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between">
-            <div className="flex gap-2">
-              {hasAccess("write") && (
-                <CreateDownloadFile
-                  data={dataKredit}
-                  getData={getData}
-                  user={user || null}
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">PERMOHONAN DOWNLOAD FILE</h1>
+            </div>
+            <div className="flex my-2 gap-2 justify-between">
+              <div className="flex gap-2">
+                {hasAccess("write") && (
+                  <CreateDownloadFile
+                    data={dataKredit}
+                    getData={getData}
+                    user={user || null}
+                  />
+                )}
+              </div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
                 />
-              )}
-            </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        rowKey={"id"}
+        columns={columns}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {selected && (
+        <ProsesDownloadFile
+          data={selected}
+          getData={getData}
+          user={user || null}
+          hasAccess={hasAccess}
+          open={open}
+          setOpen={setOpen}
+          key={selected.id}
+        />
       )}
-      rowKey={"id"}
-      columns={columns}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+    </div>
   );
 }
 
@@ -372,13 +400,16 @@ const ProsesDownloadFile = ({
   getData,
   user,
   hasAccess,
+  open,
+  setOpen,
 }: {
   data: IPermohonanAction;
   getData: Function;
   user: IUser | null;
   hasAccess: Function;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [desc, setDesc] = useState<string>();
   const [status, setStatus] = useState<StatusAction>();
   const [loading, setLoading] = useState(false);
@@ -474,21 +505,6 @@ const ProsesDownloadFile = ({
 
   return (
     <div>
-      <Button
-        size="small"
-        type="primary"
-        disabled={
-          hasAccess("detail") && data.statusAction !== StatusAction.APPROVED
-        }
-        icon={
-          data.statusAction === StatusAction.APPROVED ? (
-            <FolderOutlined />
-          ) : (
-            <FormOutlined />
-          )
-        }
-        onClick={() => setOpen(true)}
-      ></Button>
       <Modal
         title={"PROSES PERMOHONAN"}
         open={open}

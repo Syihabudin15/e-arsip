@@ -21,8 +21,10 @@ export default function TableRole() {
   const [data, setData] = useState<Role[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { access, hasAccess } = useAccess("/roles");
+  const { hasAccess } = useAccess("/roles");
   const user = useUser();
+  const [selected, setSelected] = useState<Role>();
+  const [open, setOpen] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -181,7 +183,16 @@ export default function TableRole() {
             {user && (
               <>
                 {hasAccess("delete") && (
-                  <DeleteRole data={record} getData={getData} user={user} />
+                  <Button
+                    icon={<DeleteOutlined />}
+                    type="primary"
+                    danger
+                    onClick={() => {
+                      setSelected(record);
+                      setOpen(true);
+                    }}
+                    size="small"
+                  ></Button>
                 )}
               </>
             )}
@@ -202,53 +213,65 @@ export default function TableRole() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">Roles Management</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between">
-            <div className="flex gap-2">
-              {hasAccess("write") && (
-                <Button
-                  icon={<PlusCircleOutlined />}
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">Roles Management</h1>
+            </div>
+            <div className="flex my-2 gap-2 justify-between">
+              <div className="flex gap-2">
+                {hasAccess("write") && (
+                  <Button
+                    icon={<PlusCircleOutlined />}
+                    size="small"
+                    type="primary"
+                    onClick={() =>
+                      window && window.location.replace("/roles/create")
+                    }
+                  >
+                    New
+                  </Button>
+                )}
+              </div>
+              <div className="w-42">
+                <Input.Search
                   size="small"
-                  type="primary"
-                  onClick={() =>
-                    window && window.location.replace("/roles/create")
-                  }
-                >
-                  New
-                </Button>
-              )}
-            </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        columns={columns}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {selected && user && (
+        <DeleteRole
+          data={selected}
+          getData={getData}
+          user={user}
+          open={open}
+          setOpen={setOpen}
+          key={selected.id}
+        />
       )}
-      columns={columns}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+    </div>
   );
 }
 
@@ -256,12 +279,15 @@ const DeleteRole = ({
   data,
   getData,
   user,
+  open,
+  setOpen,
 }: {
   data: Role;
   getData: Function;
   user: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { modal } = App.useApp();
 
@@ -303,15 +329,8 @@ const DeleteRole = ({
   };
   return (
     <div>
-      <Button
-        icon={<DeleteOutlined />}
-        type="primary"
-        danger
-        onClick={() => setOpen(true)}
-        size="small"
-      ></Button>
       <Modal
-        title={`HAPUS ${data.roleName}`}
+        title={`HAPUS ROLE ${data.roleName}`}
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => handleSubmit()}

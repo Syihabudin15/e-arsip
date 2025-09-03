@@ -25,8 +25,11 @@ export default function TableUser() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { access, hasAccess } = useAccess("/users");
+  const { hasAccess } = useAccess("/users");
   const user = useUser();
+  const [selected, setSelected] = useState<IUser>();
+  const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -211,19 +214,31 @@ export default function TableUser() {
             {user && (
               <>
                 {hasAccess("delete") && (
-                  <DeleteUser data={record} getData={getData} user={user} />
+                  <Button
+                    icon={<DeleteOutlined />}
+                    type="primary"
+                    danger
+                    onClick={() => {
+                      setSelected(record);
+                      setOpenDelete(true);
+                    }}
+                    size="small"
+                  ></Button>
                 )}
               </>
             )}
             {user && (
               <>
                 {hasAccess("update") && (
-                  <UpsertUser
-                    data={record}
-                    getData={getData}
-                    role={roles}
-                    user={user}
-                  />
+                  <Button
+                    icon={data ? <FormOutlined /> : <PlusCircleOutlined />}
+                    type="primary"
+                    onClick={() => {
+                      setSelected(record);
+                      setOpen(true);
+                    }}
+                    size="small"
+                  ></Button>
                 )}
               </>
             )}
@@ -234,49 +249,82 @@ export default function TableUser() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">User Management</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between">
-            <div className="flex gap-2">
-              {user && (
-                <>
-                  {hasAccess("write") && (
-                    <UpsertUser getData={getData} role={roles} user={user} />
-                  )}
-                </>
-              )}
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">User Management</h1>
             </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex my-2 gap-2 justify-between">
+              <div className="flex gap-2">
+                {user && (
+                  <>
+                    {hasAccess("write") && (
+                      <Button
+                        icon={<PlusCircleOutlined />}
+                        type="primary"
+                        size="small"
+                        onClick={() => {
+                          setSelected(undefined);
+                          setOpen(true);
+                        }}
+                      >
+                        New
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        columns={columns}
+        rowKey={"id"}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {user && (
+        <UpsertUser
+          data={selected}
+          getData={getData}
+          role={roles}
+          user={user}
+          open={open}
+          setOpen={setOpen}
+          key={selected ? selected.id : "new"}
+        />
       )}
-      columns={columns}
-      rowKey={"id"}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+      {selected && user && (
+        <DeleteUser
+          data={selected}
+          getData={getData}
+          user={user}
+          open={openDelete}
+          setOpen={setOpenDelete}
+          key={selected.id}
+        />
+      )}
+    </div>
   );
 }
 
@@ -284,12 +332,15 @@ const DeleteUser = ({
   data,
   getData,
   user,
+  open,
+  setOpen,
 }: {
   data: IUser;
   getData: Function;
   user: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { modal } = App.useApp();
 
@@ -331,13 +382,6 @@ const DeleteUser = ({
   };
   return (
     <div>
-      <Button
-        icon={<DeleteOutlined />}
-        type="primary"
-        danger
-        onClick={() => setOpen(true)}
-        size="small"
-      ></Button>
       <Modal
         title={`HAPUS ${data.fullname}`}
         open={open}
@@ -359,13 +403,16 @@ const UpsertUser = ({
   getData,
   role,
   user,
+  open,
+  setOpen,
 }: {
   data?: User;
   getData: Function;
   role: Role[];
   user: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tempData, setTempData] = useState<User>(
     data ? { ...data, password: "" } : defaultUser
@@ -432,14 +479,6 @@ const UpsertUser = ({
 
   return (
     <div>
-      <Button
-        icon={data ? <FormOutlined /> : <PlusCircleOutlined />}
-        type="primary"
-        onClick={() => setOpen(true)}
-        size="small"
-      >
-        {!data && "New"}
-      </Button>
       <Modal
         title={`${data ? "UPDATE " + data.fullname : "CREATE USER"}`}
         open={open}

@@ -64,8 +64,7 @@ export default function TableDokumen() {
       await fetch("/api/jenis-pemohon")
         .then((res) => res.json())
         .then((res) => {
-          if (res.status === 200)
-            setJeniss(res.data.map((d: JenisPemohon) => ({ ...d, key: d.id })));
+          if (res.status === 200) setJeniss(res.data);
         });
     })();
   }, []);

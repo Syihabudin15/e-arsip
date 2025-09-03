@@ -61,8 +61,6 @@ export const GET = async (req: NextRequest) => {
         }),
         ...(jenisId && { jenisPemohonId: jenisId }),
       },
-      skip,
-      take: pageSize,
     });
 
     const fixData: IPemohon[] = [];

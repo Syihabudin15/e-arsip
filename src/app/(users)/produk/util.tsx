@@ -25,6 +25,9 @@ export default function TableProduk() {
   const { hasAccess } = useAccess("/produk");
   const user = useUser();
   const { modal } = App.useApp();
+  const [selected, setSelected] = useState<Produk | undefined>(undefined);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openUpsert, setOpenUpsert] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -173,20 +176,27 @@ export default function TableProduk() {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
             {hasAccess("update") && (
-              <UpsertProduk
-                getData={getData}
-                hook={modal}
-                record={record}
-                user={user}
-              />
+              <Button
+                icon={<FormOutlined />}
+                size="small"
+                type="primary"
+                onClick={() => {
+                  setSelected(record);
+                  setOpenUpsert(true);
+                }}
+              ></Button>
             )}
             {hasAccess("delete") && (
-              <DeleteProduk
-                getData={getData}
-                modal={modal}
-                data={record}
-                user={user as IUser}
-              />
+              <Button
+                icon={<DeleteOutlined />}
+                size="small"
+                type="primary"
+                danger
+                onClick={() => {
+                  setSelected(record);
+                  setOpenDelete(true);
+                }}
+              ></Button>
             )}
           </div>
         );
@@ -195,45 +205,76 @@ export default function TableProduk() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">Produk Management</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between">
-            <div className="flex gap-2">
-              {hasAccess("write") && (
-                <UpsertProduk getData={getData} hook={modal} user={user} />
-              )}
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">Produk Management</h1>
             </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex my-2 gap-2 justify-between">
+              <div className="flex gap-2">
+                {hasAccess("write") && (
+                  <Button
+                    icon={<PlusCircleOutlined />}
+                    size="small"
+                    type="primary"
+                    onClick={() => {
+                      setSelected(undefined);
+                      setOpenUpsert(true);
+                    }}
+                  >
+                    New
+                  </Button>
+                )}
+              </div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        columns={columns}
+        rowKey={"id"}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {selected && (
+        <DeleteProduk
+          getData={getData}
+          modal={modal}
+          data={selected}
+          user={user as IUser}
+          open={openDelete}
+          setOpen={setOpenDelete}
+        />
       )}
-      columns={columns}
-      rowKey={"id"}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+      <UpsertProduk
+        getData={getData}
+        hook={modal}
+        user={user}
+        open={openUpsert}
+        setOpen={setOpenUpsert}
+        key={selected && selected.id}
+        record={selected}
+      />
+    </div>
   );
 }
 
@@ -242,13 +283,16 @@ const DeleteProduk = ({
   getData,
   user,
   modal,
+  open,
+  setOpen,
 }: {
   data: Produk;
   getData: Function;
   user: IUser;
   modal: HookAPI;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -289,15 +333,8 @@ const DeleteProduk = ({
   };
   return (
     <div>
-      <Button
-        icon={<DeleteOutlined />}
-        type="primary"
-        danger
-        onClick={() => setOpen(true)}
-        size="small"
-      ></Button>
       <Modal
-        title={`HAPUS ${data.name} (${data.code})`}
+        title={`HAPUS PRODUK ${data.name} (${data.code})`}
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => handleSubmit()}
@@ -320,13 +357,16 @@ const UpsertProduk = ({
   getData,
   hook,
   user,
+  open,
+  setOpen,
 }: {
   record?: Produk;
   getData: Function;
   hook: HookAPI;
   user?: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Produk>(record || defaultProduk);
 
@@ -367,15 +407,6 @@ const UpsertProduk = ({
 
   return (
     <div>
-      <Button
-        icon={record ? <FormOutlined /> : <PlusCircleOutlined />}
-        size="small"
-        type="primary"
-        loading={loading}
-        onClick={() => setOpen(true)}
-      >
-        {!record && "New"}
-      </Button>
       <Modal
         open={open}
         onCancel={() => setOpen(false)}

@@ -94,7 +94,7 @@ export const PUT = async (req: NextRequest) => {
   const data: Produk = await req.json();
   try {
     const find = await prisma.produk.findFirst({
-      where: { code: data.code, name: { not: data.name } },
+      where: { code: data.code, createdAt: { not: data.createdAt } },
     });
     if (find) {
       await logActivity(

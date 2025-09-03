@@ -30,6 +30,8 @@ export default function TableDeletes() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const { hasAccess } = useAccess("/request/delete");
+  const [selected, setSelected] = useState<IPermohonanAction>();
+  const [open, setOpen] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -287,11 +289,16 @@ export default function TableDeletes() {
         return (
           <div className="flex gap-2 justify-center" key={record.id}>
             {(hasAccess("update") || hasAccess("detal")) && (
-              <ProsesDeleteFile
-                data={record}
-                getData={getData}
-                hasAccess={hasAccess}
-              />
+              <Button
+                size="small"
+                type="primary"
+                disabled={record.statusAction === StatusAction.APPROVED}
+                icon={<FormOutlined />}
+                onClick={() => {
+                  setSelected(record);
+                  setOpen(true);
+                }}
+              ></Button>
             )}
           </div>
         );
@@ -300,41 +307,53 @@ export default function TableDeletes() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">PERMOHONAN HAPUS FILE</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between">
-            <div className="flex gap-2"></div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">PERMOHONAN HAPUS FILE</h1>
+            </div>
+            <div className="flex my-2 gap-2 justify-between">
+              <div className="flex gap-2"></div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        rowKey={"id"}
+        columns={columns}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {selected && (
+        <ProsesDeleteFile
+          data={selected}
+          getData={getData}
+          hasAccess={hasAccess}
+          open={open}
+          setOpen={setOpen}
+          key={selected.id}
+        />
       )}
-      rowKey={"id"}
-      columns={columns}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+    </div>
   );
 }
 
@@ -342,12 +361,15 @@ const ProsesDeleteFile = ({
   data,
   getData,
   hasAccess,
+  open,
+  setOpen,
 }: {
   data: IPermohonanAction;
   getData: Function;
   hasAccess: Function;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const user = useUser();
   const [desc, setDesc] = useState<string>();
   const [status, setStatus] = useState<StatusAction>();
@@ -422,13 +444,6 @@ const ProsesDeleteFile = ({
 
   return (
     <div>
-      <Button
-        size="small"
-        type="primary"
-        disabled={data.statusAction === StatusAction.APPROVED}
-        icon={<FormOutlined />}
-        onClick={() => setOpen(true)}
-      ></Button>
       <Modal
         title={"PROSES PERMOHONAN"}
         open={open}

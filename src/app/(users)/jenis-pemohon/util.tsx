@@ -22,8 +22,11 @@ export default function TableJenisPemohon() {
   const [data, setData] = useState<JenisPemohon[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { access, hasAccess } = useAccess("/jenis-pemohon");
+  const { hasAccess } = useAccess("/jenis-pemohon");
   const user = useUser();
+  const [selected, setSelected] = useState<JenisPemohon | undefined>(undefined);
+  const [openUpsert, setOpenUpsert] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const getData = async () => {
     setLoading(true);
@@ -177,22 +180,31 @@ export default function TableJenisPemohon() {
             {user && (
               <>
                 {hasAccess("update") && (
-                  <UpsertJenisPemohon
-                    data={record}
-                    getData={getData}
-                    user={user}
-                  />
+                  <Button
+                    icon={<FormOutlined />}
+                    type="primary"
+                    size="small"
+                    onClick={() => {
+                      setSelected(record);
+                      setOpenUpsert(true);
+                    }}
+                  ></Button>
                 )}
               </>
             )}
             {user && (
               <>
                 {hasAccess("delete") && (
-                  <DeleteJenisPemohon
-                    data={record}
-                    getData={getData}
-                    user={user}
-                  />
+                  <Button
+                    icon={<DeleteOutlined />}
+                    type="primary"
+                    size="small"
+                    onClick={() => {
+                      setSelected(record);
+                      setOpenDelete(true);
+                    }}
+                    danger
+                  ></Button>
                 )}
               </>
             )}
@@ -203,49 +215,81 @@ export default function TableJenisPemohon() {
   ];
 
   return (
-    <Table
-      title={() => (
-        <div>
-          <div className="border-b border-blue-500 py-2">
-            <h1 className="font-bold text-xl">Jenis Pemohon</h1>
-          </div>
-          <div className="flex my-2 gap-2 justify-between">
-            <div className="flex gap-2">
-              {user && (
-                <>
-                  {hasAccess("write") && (
-                    <UpsertJenisPemohon getData={getData} user={user} />
-                  )}
-                </>
-              )}
+    <div>
+      <Table
+        title={() => (
+          <div>
+            <div className="border-b border-blue-500 py-2">
+              <h1 className="font-bold text-xl">Jenis Pemohon</h1>
             </div>
-            <div className="w-42">
-              <Input.Search
-                size="small"
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex my-2 gap-2 justify-between">
+              <div className="flex gap-2">
+                {user && (
+                  <>
+                    {hasAccess("write") && (
+                      <Button
+                        icon={<PlusCircleOutlined />}
+                        type="primary"
+                        size="small"
+                        onClick={() => {
+                          setSelected(undefined);
+                          setOpenUpsert(true);
+                        }}
+                      >
+                        New
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="w-42">
+                <Input.Search
+                  size="small"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        rowKey={"id"}
+        columns={columns}
+        size="small"
+        bordered
+        loading={loading}
+        dataSource={data}
+        scroll={{ x: "max-content", y: 370 }}
+        pagination={{
+          size: "small",
+          total: total,
+          pageSizeOptions: [50, 100, 500, 1000, 10000],
+          defaultPageSize: pageSize,
+          onChange(page, pageSize) {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+      />
+      {user && (
+        <UpsertJenisPemohon
+          data={selected}
+          getData={getData}
+          user={user}
+          key={selected ? selected.id : "new"}
+          open={openUpsert}
+          setOpen={setOpenUpsert}
+        />
       )}
-      rowKey={"id"}
-      columns={columns}
-      size="small"
-      bordered
-      loading={loading}
-      dataSource={data}
-      scroll={{ x: "max-content", y: 370 }}
-      pagination={{
-        size: "small",
-        total: total,
-        pageSizeOptions: [50, 100, 500, 1000, 10000],
-        defaultPageSize: pageSize,
-        onChange(page, pageSize) {
-          setPage(page);
-          setPageSize(pageSize);
-        },
-      }}
-    />
+      {selected && user && (
+        <DeleteJenisPemohon
+          data={selected}
+          getData={getData}
+          user={user}
+          open={openDelete}
+          setOpen={setOpenDelete}
+          key={selected && selected.id}
+        />
+      )}
+    </div>
   );
 }
 
@@ -253,13 +297,16 @@ const UpsertJenisPemohon = ({
   data,
   getData,
   user,
+  open,
+  setOpen,
 }: {
   data?: JenisPemohon;
   getData: Function;
   user: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
   const [tempData, setTempData] = useState(data || defaultJenisPemohon);
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { modal } = App.useApp();
 
@@ -306,15 +353,6 @@ const UpsertJenisPemohon = ({
 
   return (
     <div>
-      <Button
-        icon={data ? <FormOutlined /> : <PlusCircleOutlined />}
-        size="small"
-        type="primary"
-        onClick={() => setOpen(true)}
-        loading={loading}
-      >
-        {!data && "New"}
-      </Button>
       <Modal
         title={`${
           data
@@ -349,12 +387,15 @@ const DeleteJenisPemohon = ({
   data,
   getData,
   user,
+  open,
+  setOpen,
 }: {
   data: JenisPemohon;
   getData: Function;
   user: IUser;
+  open: boolean;
+  setOpen: Function;
 }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { modal } = App.useApp();
 
@@ -396,16 +437,8 @@ const DeleteJenisPemohon = ({
   };
   return (
     <div>
-      <Button
-        icon={<DeleteOutlined />}
-        size="small"
-        type="primary"
-        danger
-        onClick={() => setOpen(true)}
-        loading={loading}
-      ></Button>
       <Modal
-        title={`HAPUS ${data.name.toUpperCase()}`}
+        title={`HAPUS JENI PEMOHON ${data.name.toUpperCase()}`}
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => handleSubmit()}

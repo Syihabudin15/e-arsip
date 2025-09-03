@@ -495,7 +495,7 @@ export default function TablePermohonanKredit() {
       {selected && (
         <DetailPermohonan
           data={selected}
-          open={openDelete}
+          open={openDetail}
           setOpen={setOpenDetail}
           key={selected.id}
         />

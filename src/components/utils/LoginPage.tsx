@@ -39,7 +39,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center sm:justify-end items-center w-full h-[92vh] bg-gradient-to-br from-blue-500 to-red-400">
-      <div className="flex-1 h-full">
+      <div className="flex-1 hidden sm:block h-full">
         <img
           src={"/2.jpg"}
           alt="bg-login-bank-rifi"

@@ -2,7 +2,6 @@
 import { logActivity } from "@/components/utils/Auth";
 import { NextRequest, NextResponse } from "next/server";
 
-
 /*
 Resource type:
 image -> Image
@@ -18,7 +17,7 @@ const containerClient = getContainerClient();
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '50mb', // default 1mb
+      sizeLimit: "50mb", // default 1mb
     },
   },
 };
@@ -126,7 +125,8 @@ export const DELETE = async (req: NextRequest) => {
     //   resource_type: resourcetype,
     // });
 
-    const blobName = publicId.split("/").pop(); // ekstrak nama file
+    const urlParts = publicId.split("/").slice(4); // ["testing", "file.pdf"]
+    const blobName = decodeURIComponent(urlParts.join("/")); // "testing/file.pdf"
     const blockBlobClient = containerClient.getBlockBlobClient(blobName!);
     await blockBlobClient.deleteIfExists();
 

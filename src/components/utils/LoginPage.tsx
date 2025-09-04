@@ -38,15 +38,47 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center sm:justify-end items-center w-full h-[92vh] bg-gradient-to-br from-blue-500 to-red-400">
-      <div className="flex-1 hidden sm:block h-full">
-        <img
+    <div className="flex justify-around items-center w-full h-[92vh] relative">
+      {/* <img
           src={"/2.jpg"}
           alt="bg-login-bank-rifi"
           style={{ height: "100%", width: "100%" }}
-        />
+        /> */}
+      <video
+        src="/earsip-login-bg.mp4"
+        className="absolute inset-0 h-full w-full object-cover filter brightness-75 contrast-110 saturate-125 "
+        muted
+        autoPlay
+        loop
+      />
+      <div className="text-gray-50 z-20 hidden sm:flex flex-col gap-3 text-center">
+        <div className="font-bold text-2xl flex flex-col gap-2">
+          <p className="text-3xl" style={{ textShadow: "2px 2px 8px blue" }}>
+            BPR RIMA
+          </p>
+          <p>BANK PEREKONOMIAN RAKYAT</p>
+          <p>RIFI MALIGI</p>
+        </div>
+        <div className="flex gap-3 justify-center italic mt-3">
+          <div className="flex-1 border rounded p-1">
+            <p>Realiable</p>
+            <p>Remarckable</p>
+          </div>
+          <div className="flex-1 border rounded p-1">
+            <p>Integrity</p>
+            <p>Improve</p>
+          </div>
+          <div className="flex-1 border rounded p-1">
+            <p>Manage</p>
+            <p>Meaningful</p>
+          </div>
+          <div className="flex-1 border rounded p-1">
+            <p>Action</p>
+            <p>Adaptation</p>
+          </div>
+        </div>
       </div>
-      <div className="bg-slate-50 p-5 h-[60vh] sm:h-full w-[90vw] sm:w-[30vw] flex flex-col items-center justify-center rounded">
+      <div className="p-5 h-[60vh] sm:h-[70vh] w-[90vw] sm:w-[30vw] flex flex-col items-center justify-center rounded bg-slate-50 z-10">
         <Image
           src={"/rifi-login.jpeg"}
           alt="App Logo"

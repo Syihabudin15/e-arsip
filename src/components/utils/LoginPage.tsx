@@ -54,7 +54,7 @@ export default function LoginPage() {
       <div className="text-gray-50 z-20 hidden sm:flex flex-col gap-3 text-center">
         <div className="font-bold text-2xl flex flex-col gap-2">
           <p className="text-3xl" style={{ textShadow: "2px 2px 8px blue" }}>
-            BPR RIMA
+            BANK RIFI
           </p>
           <p>BANK PEREKONOMIAN RAKYAT</p>
           <p>RIFI MALIGI</p>

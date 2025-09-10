@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     default: `${process.env.NEXT_PUBLIC_APP_SHORTNAME}`,
     template: `%s | ${process.env.NEXT_PUBLIC_APP_SHORTNAME}`,
   },
-  description: "Sistem Informasi Pembiayaan Pensiunan",
+  description: "Sistem Informasi Elektronik Arsip (E-ARSIP)",
 };
 
 export default function RootLayout({

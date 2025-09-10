@@ -39,11 +39,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-around items-center w-full h-[92vh] relative">
-      {/* <img
-          src={"/2.jpg"}
-          alt="bg-login-bank-rifi"
-          style={{ height: "100%", width: "100%" }}
-        /> */}
       <video
         src="/earsip-login-bg.mp4"
         className="absolute inset-0 h-full w-full object-cover filter brightness-75 contrast-110 saturate-125 "

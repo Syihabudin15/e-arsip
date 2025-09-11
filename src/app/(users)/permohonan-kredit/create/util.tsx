@@ -83,7 +83,7 @@ export default function CreatePermohonanKredit({
   }, [user]);
 
   const handleSubmit = async () => {
-    if (!data.produkId || !data.userId || !data.pemohonId)
+    if (!data.produkId || !data.userId)
       return alert("Mohon lengkapi data terlebih dahulu");
     setLoading(true);
     if ("key" in data) {

@@ -294,36 +294,6 @@ export default function CreatePermohonanKredit({
             disable={record ? true : disableEdit}
           />
           <FormInput
-            label="Nomor CIF"
-            value={data.Pemohon.noCIF}
-            required
-            type="number"
-            onChange={(e: string) => {
-              setData({
-                ...data,
-                Pemohon: {
-                  ...data.Pemohon,
-                  noCIF: String(e),
-                },
-              });
-              const txt = `${record ? "Edit" : "Tambah"} No CIF (${
-                record ? record.Pemohon.noCIF : ""
-              } ${record ? "to" : ""} ${e})`;
-              setActivity((prev) => {
-                prev = prev
-                  ? prev.filter(
-                      (p) => !p.includes(`${record ? "Edit" : "Tambah"} No CIF`)
-                    )
-                  : [];
-                prev.push(txt);
-                return prev;
-              });
-            }}
-            align="col"
-            width={"48%"}
-            disable={record ? true : disableEdit}
-          />
-          <FormInput
             label="Jenis Pemohon"
             value={data.Pemohon.jenisPemohonId || undefined}
             required

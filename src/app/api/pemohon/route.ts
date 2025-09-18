@@ -94,24 +94,24 @@ export const POST = async (req: NextRequest) => {
   const data: Pemohon = await req.json();
 
   try {
-    const find = await prisma.pemohon.findFirst({
-      where: { noCIF: data.noCIF },
-    });
-    if (find) {
-      await logActivity(
-        req,
-        "Tambah Data Pemohon",
-        "POST",
-        "pemohon",
-        JSON.stringify(data),
-        JSON.stringify({ status: 400, msg: "BAD REQUEST" }),
-        `Gagal menambahkan data pemohon ${data.fullname} karena Nomor CIF sudah pernah digunakan sebelumnya`
-      );
-      return NextResponse.json(
-        { status: 400, msg: "Nomor CIF sudah pernah digunakan sebelumnya" },
-        { status: 400 }
-      );
-    }
+    // const find = await prisma.pemohon.findFirst({
+    //   where: { noCIF: data.noCIF },
+    // });
+    // if (find) {
+    //   await logActivity(
+    //     req,
+    //     "Tambah Data Pemohon",
+    //     "POST",
+    //     "pemohon",
+    //     JSON.stringify(data),
+    //     JSON.stringify({ status: 400, msg: "BAD REQUEST" }),
+    //     `Gagal menambahkan data pemohon ${data.fullname} karena Nomor CIF sudah pernah digunakan sebelumnya`
+    //   );
+    //   return NextResponse.json(
+    //     { status: 400, msg: "Nomor CIF sudah pernah digunakan sebelumnya" },
+    //     { status: 400 }
+    //   );
+    // }
     const { id, ...savedData } = data;
     await prisma.pemohon.create({ data: savedData });
     await logActivity(
@@ -139,24 +139,24 @@ export const POST = async (req: NextRequest) => {
 export const PUT = async (req: NextRequest) => {
   const data: any = await req.json();
   try {
-    const find = await prisma.pemohon.findFirst({
-      where: { noCIF: data.noCIF, NIK: { not: data.NIK } },
-    });
-    if (find) {
-      await logActivity(
-        req,
-        "Update Data Pemohon",
-        "PUT",
-        "pemohon",
-        JSON.stringify(data),
-        JSON.stringify({ status: 400, msg: "BAD REQUEST" }),
-        `Gagal update data pemohon ${data.fullname} karena Nomor CIF sudah pernah digunakan sebelumnya`
-      );
-      return NextResponse.json(
-        { status: 400, msg: "Nomor CIF sudah pernah digunakan sebelumnya" },
-        { status: 400 }
-      );
-    }
+    // const find = await prisma.pemohon.findFirst({
+    //   where: { noCIF: data.noCIF, NIK: { not: data.NIK } },
+    // });
+    // if (find) {
+    //   await logActivity(
+    //     req,
+    //     "Update Data Pemohon",
+    //     "PUT",
+    //     "pemohon",
+    //     JSON.stringify(data),
+    //     JSON.stringify({ status: 400, msg: "BAD REQUEST" }),
+    //     `Gagal update data pemohon ${data.fullname} karena Nomor CIF sudah pernah digunakan sebelumnya`
+    //   );
+    //   return NextResponse.json(
+    //     { status: 400, msg: "Nomor CIF sudah pernah digunakan sebelumnya" },
+    //     { status: 400 }
+    //   );
+    // }
     const { id, PermohonanKredit, JenisPemohon, ...savedData } = data;
     await prisma.pemohon.update({ where: { id: data.id }, data: savedData });
     await logActivity(

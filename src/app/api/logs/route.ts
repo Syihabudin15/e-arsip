@@ -1,4 +1,5 @@
 import prisma from "@/components/Prisma";
+import { Logs } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -61,6 +62,19 @@ export const GET = async (req: NextRequest) => {
       { data: find, total, msg: "OK", status: 200 },
       { status: 200 }
     );
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json({ status: 500 }, { status: 500 });
+  }
+};
+
+export const POST = async (req: NextRequest) => {
+  const data: Logs = await req.json();
+  try {
+    const { id, ...saved } = data;
+    await prisma.logs.create({ data: saved });
+
+    return NextResponse.json({ status: 200 }, { status: 200 });
   } catch (err) {
     console.log(err);
     return NextResponse.json({ status: 500 }, { status: 500 });

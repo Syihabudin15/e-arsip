@@ -303,7 +303,7 @@ export default function TableDokumen() {
         record={selected}
         jeniss={jeniss}
         hook={modal}
-        key={selected && selected.id}
+        key={selected ? selected.id : "create"}
         open={openUpsert}
         setOpen={setOpenUpsert}
       />
@@ -366,8 +366,7 @@ const UpsertPemohon = ({
         loading={loading}
         okButtonProps={{
           loading: loading,
-          disabled:
-            !data.noCIF || !data.fullname || !data.jenisPemohonId || !data.NIK,
+          disabled: !data.fullname || !data.jenisPemohonId,
           onClick: () => handleSubmit(),
         }}
       >
@@ -473,8 +472,8 @@ const DeletePemohon = ({
 const defaultPemohon: Pemohon = {
   id: 0,
   fullname: "",
-  NIK: "",
-  noCIF: "",
+  NIK: null,
+  noCIF: null,
   status: true,
   jenisPemohonId: 0,
 };

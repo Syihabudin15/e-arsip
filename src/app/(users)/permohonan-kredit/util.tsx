@@ -147,7 +147,6 @@ export default function TablePermohonanKredit() {
           },
         };
       },
-      fixed: window && window.innerWidth > 600 ? "left" : false,
     },
     {
       title: "NAMA PEMOHON",
@@ -171,6 +170,21 @@ export default function TablePermohonanKredit() {
       key: "nik",
       className: "text-xs",
       width: 150,
+      onHeaderCell: () => {
+        return {
+          ["style"]: {
+            textAlign: "center",
+            fontSize: 12,
+          },
+        };
+      },
+    },
+    {
+      title: "NOMOR REKENING",
+      dataIndex: "accountNumber",
+      key: "accountNumber",
+      className: "text-xs",
+      width: 100,
       onHeaderCell: () => {
         return {
           ["style"]: {
@@ -251,7 +265,7 @@ export default function TablePermohonanKredit() {
       dataIndex: "activity",
       key: "activity",
       className: "text-xs",
-      width: 300,
+      width: 400,
       onHeaderCell: () => {
         return {
           ["style"]: {
@@ -594,7 +608,7 @@ export const DetailPermohonan = ({
         style={{ top: 20 }}
       >
         <div className="flex flex-wrap gap-2 h-[80vh] overflow-y-scroll">
-          <div className="w-full sm:flex-1 h-full overflow-auto">
+          <div className="w-full sm:w-[40%] h-full overflow-auto">
             <DataPemohon data={data} />
           </div>
           <div className="w-full sm:flex-1 overflow-auto sm:border-l rounded">
@@ -731,8 +745,7 @@ const DataPemohon = ({ data }: { data: IPermohonanKredit }) => {
 };
 
 const BerkasBerkas = ({ files }: { files: IRootFiles }) => {
-  const { access, hasAccess } = useAccess("/permohonan-kredit");
-  const user = useUser();
+  const { hasAccess } = useAccess("/permohonan-kredit");
   const [allFile, setAllFile] = useState<string>();
 
   useEffect(() => {

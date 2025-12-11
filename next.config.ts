@@ -1,13 +1,10 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  future: { webpack5: true },
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    config.resolve.alias.canvas = false;
-    config.resolve.alias.encoding = false;
-    return config;
-  },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // experimental: {
+  //   serverActions: true,
+  // },
+  // Disable strict mode temporarily for debugging
+  // reactStrictMode: false,
 };
 
-export default nextConfig;
+module.exports = nextConfig;

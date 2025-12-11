@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 async function main() {
-  const pass = await bcrypt.hash("Tsani182", 10);
+  const pass = await bcrypt.hash("syrel2025", 10);
   await prisma.user.upsert({
     where: { username: "syihabudin" },
     update: {},

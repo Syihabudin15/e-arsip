@@ -180,7 +180,7 @@ export default function TablePermohonanKredit() {
       },
     },
     {
-      title: "NOMOR REKENING",
+      title: "REKENING",
       dataIndex: "accountNumber",
       key: "accountNumber",
       className: "text-xs",

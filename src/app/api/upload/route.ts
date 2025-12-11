@@ -1,26 +1,12 @@
-// import cloudinary from "@/components/Cloudinary";
 import { logActivity } from "@/components/utils/Auth";
 import { NextRequest, NextResponse } from "next/server";
-
-/*
-Resource type:
-image -> Image
-video -> video
-raw   -> pdf
-*/
-
 import { getContainerClient } from "@/components/Azure";
 
-const folderName = process.env.AZURE_STORAGE_CONTAINER_FOLDER!;
-const containerClient = getContainerClient();
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "50mb", // default 1mb
-    },
-  },
-};
+const folderName = process.env.AZURE_STORAGE_CONTAINER_FOLDER || "earsip";
+const containerClient = getContainerClient();
 
 export const POST = async (req: NextRequest) => {
   const formData = await req.formData();

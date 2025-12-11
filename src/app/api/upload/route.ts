@@ -2,9 +2,6 @@ import { logActivity } from "@/components/utils/Auth";
 import { NextRequest, NextResponse } from "next/server";
 import { getContainerClient } from "@/components/Azure";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
 const folderName = process.env.AZURE_STORAGE_CONTAINER_FOLDER || "earsip";
 const containerClient = getContainerClient();
 
